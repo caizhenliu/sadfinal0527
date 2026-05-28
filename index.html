@@ -179,18 +179,10 @@
         <div class="logo">
             <h1><i class="fa-solid fa-earth-asia" style="color:var(--accent-earth)"></i> Agent TT <span>智慧旅遊行程共編平台</span></h1>
         </div>
-        <div style="font-size: 13px; color: #FAF9F6;" id="topTripStatusIndicator">
-            <i class="fa-solid fa-graduation-cap"></i> NCNU 資管系 系統分析與設計第七組專題報告展示
-        </div>
         <div style="display:flex; align-items:center; gap: 8px;">
-            <div id="cloudStatus" style="font-size: 13px; color: rgba(255,255,255,0.8); margin-right: 12px; display: flex; align-items: center; gap: 4px;">
-                <i class="fa-solid fa-laptop-code" style="color:#4CAF50;"></i> 單機多分頁同步模式
-            </div>
             <button class="btn btn-outline" style="color: white; border-color: rgba(255,255,255,0.3);" id="btnNavAccommodation" onclick="switchScreen('screenAccommodation')"><i class="fa-solid fa-hotel"></i> 找房源</button>
-            <button class="btn btn-outline" style="color: white; border-color: rgba(255,255,255,0.3);" onclick="openMyOrdersModal()"><i class="fa-solid fa-list-check"></i> 我的訂單</button>
-            <button class="btn btn-outline" style="color: white; border-color: rgba(255,255,255,0.3);" onclick="openMyMessagesModal()"><i class="fa-solid fa-envelope"></i> 我的訊息</button>
-            <button class="btn btn-outline" style="color: var(--accent-earth); border-color: var(--accent-earth);" id="btnNavAdmin" onclick="switchScreen('screenAdmin')"><i class="fa-solid fa-user-shield"></i> 進入後台</button>
-            <button class="btn btn-outline" style="color: white; border-color: rgba(255,255,255,0.3); display: none;" id="btnReturnDashboard" onclick="switchScreen('screenDashboard')"><i class="fa-solid fa-house"></i> 返回主畫面</button>
+            <button class="btn btn-outline" style="color: white; border-color: rgba(255,255,255,0.3);" id="btnNavMyOrders" onclick="openMyOrdersModal()"><i class="fa-solid fa-list-check"></i> 我的訂單</button>
+            <button class="btn btn-outline" style="color: white; border-color: rgba(255,255,255,0.3);" id="btnNavMyMessages" onclick="openMyMessagesModal()"><i class="fa-solid fa-envelope"></i> 我的訊息</button>
             <button class="btn btn-outline" style="color: white; border-color: rgba(255,255,255,0.3);" onclick="openAccountModal()"><i class="fa-solid fa-user"></i> <span id="headerUserName">會員</span></button>
             <button class="btn btn-danger" style="padding: 6px 12px; font-size: 13px;" onclick="executeLogout()"><i class="fa-solid fa-right-from-bracket"></i> 登出</button>
         </div>
@@ -421,6 +413,11 @@
     <!-- ================= B模組: 房源搜尋與展示 (顧客端) ================= -->
     <div class="view-screen" id="screenAccommodation">
         <div class="main-dashboard">
+            <div style="margin-bottom: 15px;">
+                <button class="btn btn-outline" style="height: 38px; border-color:#ccc; color:#555;" onclick="switchScreen('screenDashboard')">
+                    <i class="fa-solid fa-arrow-left"></i> 返回主畫面
+                </button>
+            </div>
             <div class="toolbar" style="background: white; padding: 20px; border-radius: 12px; box-shadow: 0 2px 10px rgba(0,0,0,0.05);">
                 <div style="display:flex; gap: 15px; flex-wrap: wrap; width: 100%; align-items: flex-end;">
                     <div class="form-group" style="margin:0; flex:1; min-width:150px;">
@@ -579,15 +576,7 @@
                             <tbody id="pricingLogsList"></tbody>
                         </table>
                     </div>
-                    <table class="data-table">
-                        <thead>
-                            <tr><th>修改時間</th><th>房源名稱</th><th>修改前價格</th><th>修改後價格</th><th>操作人員</th></tr>
-                        </thead>
-                        <tbody id="adminPricingLog">
-                            <tr><td>2026-05-25 14:30</td><td>花蓮鐵道行館</td><td>$2,500</td><td><span style="color:var(--danger-color)">$2,000 (早鳥)</span></td><td>張經理</td></tr>
-                            <tr><td>2026-05-24 09:15</td><td>太魯閣山月村</td><td>$4,200</td><td><span style="color:var(--danger-color)">$3,800 (促銷)</span></td><td>系統排程</td></tr>
-                        </tbody>
-                    </table>
+
                 </div>
 
 
@@ -623,6 +612,15 @@
                                 <input type="text" id="adminChatInput" class="form-control" placeholder="回覆訊息..." onkeypress="if(event.key==='Enter') sendAdminChatMessage()">
                                 <button class="btn btn-primary" onclick="sendAdminChatMessage()"><i class="fa-solid fa-paper-plane"></i></button>
                             </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="adminTab-reviews" style="display:none;">
+                    <h2 style="color:var(--primary-earth); margin-bottom:20px;">顧客評價管理</h2>
+                    <div style="background:white; padding:20px; border-radius:8px; box-shadow:0 2px 8px rgba(0,0,0,0.05);">
+                        <div id="adminReviewList" style="display:flex; flex-direction:column; gap:15px;">
+                            <!-- JS 生成 -->
                         </div>
                     </div>
                 </div>
@@ -1515,11 +1513,9 @@
             
             if (currentUser.role === 'admin') {
                 document.getElementById('btnNavAccommodation').style.display = 'none';
-                document.getElementById('btnNavAdmin').style.display = 'inline-block';
                 switchScreen('screenAdmin');
             } else {
                 document.getElementById('btnNavAccommodation').style.display = 'inline-block';
-                document.getElementById('btnNavAdmin').style.display = 'none';
                 switchScreen('screenDashboard');
             }
             
@@ -1866,7 +1862,10 @@
             switchScreen('screenEditor');
             
             // 變更頁首狀態顯示
-            document.getElementById("topTripStatusIndicator").innerHTML = `<i class="fa-solid fa-route" style="color:var(--accent-earth)"></i> 當前編輯中行程：<strong>${selectedTripContextObj.name}</strong> (${selectedTripContextObj.station}範圍)`;
+            let indicator = document.getElementById("topTripStatusIndicator");
+            if (indicator) {
+                indicator.innerHTML = `<i class="fa-solid fa-route" style="color:var(--accent-earth)"></i> 當前編輯中行程：<strong>${selectedTripContextObj.name}</strong> (${selectedTripContextObj.station}範圍)`;
+            }
             // document.getElementById("geoMapPinText").innerText = selectedTripContextObj.station;
             document.getElementById("fin-budget").innerText = `$${selectedTripContextObj.budget}`;
 
@@ -2964,6 +2963,34 @@
                     }
                 } catch(err) {}
             }
+            if(e.key === 'hualienOrders') {
+                try {
+                    let parsed = JSON.parse(e.newValue);
+                    if(Array.isArray(parsed)) {
+                        myOrders = parsed;
+                        if(document.getElementById("adminTab-orders").style.display === "block") {
+                            renderAdminOrders();
+                        }
+                        if(document.getElementById("myOrdersModal").style.display === "flex") {
+                            openMyOrdersModal();
+                        }
+                    }
+                } catch(err) {}
+            }
+            if(e.key === 'hualienReviews') {
+                try {
+                    let parsed = JSON.parse(e.newValue);
+                    if(Array.isArray(parsed)) {
+                        allReviews = parsed;
+                        if(document.getElementById("adminTab-reviews") && document.getElementById("adminTab-reviews").style.display === "block") {
+                            renderAdminReviews();
+                        }
+                        if(document.getElementById("propDetailModal") && document.getElementById("propDetailModal").style.display === "flex" && currentViewingProp) {
+                            renderPropReviews(currentViewingProp.id);
+                        }
+                    }
+                } catch(err) {}
+            }
         });
 
         function openChatWindow(contextId = "general", title = "客服中心") {
@@ -3016,29 +3043,65 @@
             return now.getHours().toString().padStart(2, '0') + ":" + now.getMinutes().toString().padStart(2, '0');
         }
 
+        function recallMessage(sessionId, msgId) {
+            let session = chatSessions.find(s => s.sessionId === sessionId);
+            if(session) {
+                let msg = session.messages.find(m => m.id === msgId);
+                if(msg) {
+                    msg.isRecalled = true;
+                    saveChatSessions();
+                    
+                    if(document.getElementById("customerChatWindow").style.display === "flex" && currentUserChatSessionId === sessionId) {
+                        renderCustomerChat();
+                    }
+                    if(document.getElementById("adminTab-chat").style.display === "block" && currentAdminChatSessionId === sessionId) {
+                        renderAdminChatMessages();
+                    }
+                }
+            }
+        }
+
         function renderCustomerChat() {
             let session = chatSessions.find(s => s.contextId === currentChatContextId);
             if(!session) {
                 session = { 
                     sessionId: Date.now(), 
                     contextId: currentChatContextId, 
-                    user: "目前的顧客", 
-                    messages: [{sender:"admin", text: currentChatContextId==="general" ? "您好，請問有什麼我可以幫忙的？" : "您好，我是房東，請問有什麼問題嗎？", time: getCurrentTimeStr()}] 
+                    user: (typeof currentUser !== 'undefined' && currentUser && currentUser.name) ? currentUser.name : "目前的顧客", 
+                    messages: [{id: Date.now()+"_init", sender:"admin", text: currentChatContextId==="general" ? "您好，請問有什麼我可以幫忙的？" : "您好，我是房東，請問有什麼問題嗎？", time: getCurrentTimeStr()}] 
                 };
                 chatSessions.push(session);
                 saveChatSessions();
+            } else {
+                if (typeof currentUser !== 'undefined' && currentUser && currentUser.name) {
+                    if (session.user !== currentUser.name) {
+                        session.user = currentUser.name;
+                        saveChatSessions();
+                    }
+                }
             }
             currentUserChatSessionId = session.sessionId;
 
             let html = "";
             session.messages.forEach(m => {
                 let isMe = m.sender === "user";
-                let timeStr = m.time ? `<div style="font-size:10px; color:#aaa; margin-top:2px; ${isMe ? 'text-align:right;' : 'text-align:left;'}">${m.time}</div>` : "";
                 
-                html += `<div style="display:flex; flex-direction:column; align-items:${isMe ? 'flex-end' : 'flex-start'}; margin-bottom:8px;">
-                    <div style="background:${isMe ? 'var(--primary-earth)' : '#eee'}; color:${isMe ? '#fff' : '#000'}; padding:8px 12px; border-radius:12px; font-size:13px; max-width:80%;">${m.text}</div>
-                    ${timeStr}
-                </div>`;
+                if (m.isRecalled) {
+                    html += `<div style="align-self:${isMe ? 'flex-end' : 'flex-start'}; background:transparent; color:#aaa; font-style:italic; padding:4px 0; font-size:12px; margin-bottom:10px;">此訊息已收回</div>`;
+                } else if(isMe) {
+                    let recallBtn = `<span style="font-size:10px; color:#aaa; cursor:pointer; margin-left:8px;" onclick="recallMessage(${session.sessionId}, '${m.id}')"><i class="fa-solid fa-rotate-left"></i> 收回</span>`;
+                    html += `<div style="align-self:flex-end; background:var(--primary-earth); color:white; padding:8px 12px; border-radius:12px 12px 0 12px; max-width:80%; font-size:13px;">
+                                <div style="font-size:10px; opacity:0.7; margin-bottom:4px;">顧客 (我)</div>
+                                ${m.text}
+                             </div>
+                             <div style="align-self:flex-end; font-size:10px; color:#aaa; margin-top:-4px; margin-bottom:8px;">${m.time || ''}${recallBtn}</div>`;
+                } else {
+                    html += `<div style="align-self:flex-start; background:#eee; color:#000; padding:8px 12px; border-radius:12px 12px 12px 0; max-width:80%; font-size:13px;">
+                                <div style="font-size:10px; opacity:0.5; margin-bottom:4px;">房東</div>
+                                ${m.text}
+                             </div>
+                             <div style="align-self:flex-start; font-size:10px; color:#aaa; margin-top:-4px; margin-bottom:8px;">${m.time || ''}</div>`;
+                }
             });
             document.getElementById("customerChatMessages").innerHTML = html;
         }
@@ -3049,7 +3112,10 @@
             if(!text) return;
             let session = chatSessions.find(s => s.sessionId === currentUserChatSessionId);
             if(session) {
-                session.messages.push({sender: "user", text: text, time: getCurrentTimeStr()});
+                if (typeof currentUser !== 'undefined' && currentUser && currentUser.name) {
+                    session.user = currentUser.name;
+                }
+                session.messages.push({id: Date.now().toString() + Math.random().toString(), sender: "user", text: text, time: getCurrentTimeStr()});
                 saveChatSessions();
                 input.value = "";
                 renderCustomerChat();
@@ -3208,15 +3274,27 @@
         <div class="modal-box" style="max-width:400px;">
             <h3 style="color:var(--primary-earth); margin-bottom:15px;"><i class="fa-solid fa-star"></i> 填寫住宿評價</h3>
             <input type="hidden" id="reviewOrderId">
-            <div class="form-group">
-                <label>星級評分 (1~5)</label>
-                <select id="reviewRating" class="form-control">
-                    <option value="5">⭐⭐⭐⭐⭐ (5) 極佳</option>
-                    <option value="4">⭐⭐⭐⭐ (4) 很好</option>
-                    <option value="3">⭐⭐⭐ (3) 普通</option>
-                    <option value="2">⭐⭐ (2) 差強人意</option>
-                    <option value="1">⭐ (1) 極差</option>
-                </select>
+            <div style="display:flex; gap:10px;">
+                <div class="form-group" style="flex:1;">
+                    <label>整體滿意度 (1~5)</label>
+                    <select id="reviewRatingOverall" class="form-control">
+                        <option value="5">⭐⭐⭐⭐⭐ (5) 極佳</option>
+                        <option value="4">⭐⭐⭐⭐ (4) 很好</option>
+                        <option value="3">⭐⭐⭐ (3) 普通</option>
+                        <option value="2">⭐⭐ (2) 差強人意</option>
+                        <option value="1">⭐ (1) 差</option>
+                    </select>
+                </div>
+                <div class="form-group" style="flex:1;">
+                    <label>設備滿意度 (1~5)</label>
+                    <select id="reviewRatingFacilities" class="form-control">
+                        <option value="5">⭐⭐⭐⭐⭐ (5) 極佳</option>
+                        <option value="4">⭐⭐⭐⭐ (4) 很好</option>
+                        <option value="3">⭐⭐⭐ (3) 普通</option>
+                        <option value="2">⭐⭐ (2) 差強人意</option>
+                        <option value="1">⭐ (1) 差</option>
+                    </select>
+                </div>
             </div>
             <div class="form-group">
                 <label>文字評論</label>
@@ -3232,7 +3310,7 @@
 
 
     <!-- 顧客端 浮動客服按鈕與聊天視窗 -->
-    <div style="position:fixed; bottom:20px; right:20px; z-index:9999;">
+    <div id="customerFloatingBtnWrapper" style="position:fixed; bottom:20px; right:20px; z-index:9999;">
         <button class="btn btn-primary" style="border-radius:50%; width:60px; height:60px; box-shadow:0 4px 12px rgba(0,0,0,0.2); font-size:24px; display:flex; justify-content:center; align-items:center;" onclick="toggleCustomerChat()">
             <i class="fa-solid fa-comments"></i>
         </button>
@@ -3365,27 +3443,113 @@
         let wishlistItems = [];
         let currentViewingProp = null;
         let myOrders = [];
-        
+        let savedOrders = localStorage.getItem('hualienOrders');
+        if(savedOrders) {
+            try { myOrders = JSON.parse(savedOrders); } catch(e){}
+        }
+        function saveOrdersData() {
+            localStorage.setItem('hualienOrders', JSON.stringify(myOrders));
+        }
 
+        let allReviews = [];
+        let savedReviews = localStorage.getItem('hualienReviews');
+        if(savedReviews) {
+            try { allReviews = JSON.parse(savedReviews); } catch(e){}
+        }
+        function saveReviewsData() {
+            localStorage.setItem('hualienReviews', JSON.stringify(allReviews));
+        }
+        
+        if (allReviews.length === 0) {
+            allProperties.forEach(p => {
+                if (p.reviews && p.reviews.length > 0) {
+                    p.reviews.forEach(r => {
+                        allReviews.push({
+                            id: r.id,
+                            propId: p.id,
+                            propName: p.name,
+                            roomName: "房型未指定",
+                            orderId: "mock",
+                            user: r.user,
+                            ratingOverall: r.rating,
+                            ratingFacilities: r.rating,
+                            comment: r.comment,
+                            time: r.date,
+                            replyText: "",
+                            replyTime: ""
+                        });
+                    });
+                }
+            });
+            saveReviewsData();
+        }
+        
+        function submitReview() {
+            let orderId = document.getElementById("reviewOrderId").value;
+            let ratingOverall = parseFloat(document.getElementById("reviewRatingOverall").value);
+            let ratingFacilities = parseFloat(document.getElementById("reviewRatingFacilities").value);
+            let comment = document.getElementById("reviewText").value;
+            
+            let order = myOrders.find(o => o.id === orderId);
+            if(!order) return;
+            
+            let nowStr = new Date().toLocaleString('zh-TW', { hour12: false });
+            let userName = (typeof currentUser !== 'undefined' && currentUser && currentUser.name) ? currentUser.name : "匿名住客";
+            
+            order.items.forEach(item => {
+                let p = allProperties.find(x => x.id === item.propId);
+                if(p) {
+                    allReviews.unshift({
+                        id: Date.now() + Math.random().toString(36).substr(2, 5),
+                        propId: p.id,
+                        propName: p.name,
+                        roomName: item.name,
+                        orderId: orderId,
+                        user: userName,
+                        ratingOverall: ratingOverall,
+                        ratingFacilities: ratingFacilities,
+                        comment: comment || "未留文字",
+                        time: nowStr,
+                        replyText: "",
+                        replyTime: ""
+                    });
+                }
+            });
+            saveReviewsData();
+            order.isReviewed = true;
+            saveOrdersData();
+            document.getElementById('reviewModal').style.display = 'none';
+            alert("評價已送出，感謝您的回饋！");
+            openMyOrdersModal();
+            if(document.getElementById('screenAccommodation').classList.contains('active')) renderProperties();
+        }
 
         // 擴充畫面切換邏輯
         function switchScreen(screenId) {
             document.querySelectorAll('.view-screen').forEach(el => el.classList.remove('active'));
             document.getElementById(screenId).classList.add('active');
             
-            let headerBtn = document.getElementById("btnReturnDashboard");
-            if (headerBtn) {
-                if (screenId === 'screenDashboard' || screenId === 'screenAuth') {
-                    headerBtn.style.display = 'none';
-                    if (screenId === 'screenDashboard') {
-                        let indicator = document.getElementById("topTripStatusIndicator");
-                        if (indicator) indicator.innerHTML = `<i class="fa-solid fa-graduation-cap"></i> NCNU 資管系 系統分析與設計第七組專題報告展示`;
-                        renderDashboardTripCards();
-                        saveTripsData();
-                    }
-                } else {
-                    headerBtn.style.display = 'inline-block';
-                }
+            if (screenId === 'screenDashboard') {
+                renderDashboardTripCards();
+                saveTripsData();
+            }
+
+            let floatingBtn = document.getElementById("customerFloatingBtnWrapper");
+            let chatWin = document.getElementById("customerChatWindow");
+            if (floatingBtn) {
+                floatingBtn.style.display = (screenId === 'screenAdmin') ? 'none' : 'block';
+            }
+            if (chatWin && screenId === 'screenAdmin') {
+                chatWin.style.display = 'none';
+            }
+
+            let myOrdersBtn = document.getElementById("btnNavMyOrders");
+            let myMessagesBtn = document.getElementById("btnNavMyMessages");
+            if (myOrdersBtn) {
+                myOrdersBtn.style.display = (screenId === 'screenAdmin') ? 'none' : 'inline-block';
+            }
+            if (myMessagesBtn) {
+                myMessagesBtn.style.display = (screenId === 'screenAdmin') ? 'none' : 'inline-block';
             }
 
             if(screenId === 'screenAccommodation') renderProperties();
@@ -3507,11 +3671,27 @@
                 }
                 let finalPriceTotal = finalPricePerNight * nights;
 
+                let roomImg = rt.img;
+                if (!roomImg) {
+                    const beautifulRooms = [
+                        "1582719478250-c89404bb8a0e",
+                        "1631049307264-da0ec9d70304",
+                        "1566665797739-1674de7a421a",
+                        "1590490359854-df0a28f8f2b0",
+                        "1578683010236-d716f9a3f461"
+                    ];
+                    let idx = (rt.id || Math.floor(Math.random()*100)) % beautifulRooms.length;
+                    roomImg = `https://images.unsplash.com/photo-${beautifulRooms[idx]}?auto=format&fit=crop&w=400&q=80`;
+                }
+
                 return `
-                    <div style="display:flex; justify-content:space-between; align-items:center; border:1px solid #eee; padding:10px; border-radius:6px;">
-                        <div>
-                            <div style="font-weight:bold; color:var(--text-main); font-size:14px;">${rt.name}</div>
-                            <div style="font-size:12px; color:var(--text-muted); margin-top:4px;">剩餘庫存: ${rt.quantity} 間</div>
+                    <div style="display:flex; justify-content:space-between; align-items:center; border:1px solid #eee; padding:10px; border-radius:6px; margin-bottom:10px;">
+                        <div style="display:flex; align-items:center; gap:15px;">
+                            <img src="${roomImg}" alt="${rt.name}" style="width:80px; height:60px; object-fit:cover; border-radius:4px; box-shadow:0 1px 3px rgba(0,0,0,0.1);">
+                            <div>
+                                <div style="font-weight:bold; color:var(--text-main); font-size:14px;">${rt.name}</div>
+                                <div style="font-size:12px; color:var(--text-muted); margin-top:4px;">剩餘庫存: ${rt.quantity} 間</div>
+                            </div>
                         </div>
                         <div style="display:flex; align-items:center; gap:15px;">
                             <div style="text-align:right;">
@@ -3530,8 +3710,7 @@
             }).join('');
             document.getElementById("propDetailRoomTypes").innerHTML = rtHtml;
             
-            let reviewsHtml = (p.reviews || []).map(r => `<div><strong>${r.user}</strong> <span style="color:#FFA000; font-size:12px;">(${"⭐".repeat(Math.round(r.rating))})</span><br><span style="font-size:13px;">${r.comment}</span><div style="font-size:10px; color:#aaa; margin-top:2px;">${r.date}</div></div>`).join("<hr style='margin:8px 0; border:0; border-top:1px dashed #eee;'>");
-            document.getElementById("propDetailReviews").innerHTML = reviewsHtml || "<div style='color:var(--text-muted); font-size:13px;'>尚無評價</div>";
+            renderPropReviews(p.id);
             
             document.getElementById("propDetailModal").style.display = "flex";
         }
@@ -3764,6 +3943,7 @@
                 isReviewed: false
             };
             myOrders.unshift(newOrder);
+            saveOrdersData();
 
             if(fromCart) {
                 cartItems = cartItems.filter(item => !item.checked);
@@ -3830,6 +4010,7 @@
                         cartItems.push(item);
                     });
                     myOrders.splice(orderIdx, 1);
+                    saveOrdersData();
                 }
                 
                 document.getElementById("cartBadge").style.display = "inline-block";
@@ -3882,6 +4063,7 @@
 
             order.status = "已付款 (準備入住)";
             order.paymentMethod = currentPaymentMethod;
+            saveOrdersData();
 
             // Deduct Inventory
             order.items.forEach(item => {
@@ -3914,15 +4096,15 @@
                 myOrders.forEach(order => {
                     let actionHtml = "";
                     let isCanceled = order.status === "已取消";
-                    if(order.status === "已完成") {
+                    if(order.status === "已完成" || order.status === "已退房") {
                         actionHtml = !order.isReviewed ? `<button class="btn btn-outline btn-sm" onclick="openReviewModal('${order.id}')">⭐ 填寫評價</button>` : `<span style="font-size:12px; color:#888;">已評價</span>`;
                     } else if(!isCanceled) {
                         actionHtml = `<button class="btn btn-outline btn-sm" style="color:var(--danger-color); border-color:var(--danger-color);" onclick="cancelOrder('${order.id}')">❌ 取消訂單</button>
-                                      <button class="btn btn-outline btn-sm" style="margin-left:5px;" onclick="simulateStayCompleted('${order.id}')">✅ 模擬入住完成</button>`;
+                                      <button class="btn btn-outline btn-sm" style="margin-left:5px;" onclick="simulateStayCompleted('${order.id}')">✅ 完成訂單</button>`;
                     }
                     
-                    let statusBg = isCanceled ? "#f5f5f5" : (order.status === "已完成" ? "#EAF2EC" : "#FFF8E1");
-                    let statusColor = isCanceled ? "#888" : (order.status === "已完成" ? "var(--primary-earth)" : "#F57F17");
+                    let statusBg = isCanceled ? "#f5f5f5" : ((order.status === "已完成" || order.status === "已退房") ? "#EAF2EC" : "#FFF8E1");
+                    let statusColor = isCanceled ? "#888" : ((order.status === "已完成" || order.status === "已退房") ? "var(--primary-earth)" : "#F57F17");
                     
                     html += `<div style="border:1px solid #eee; border-radius:8px; padding:15px; background:${isCanceled ? '#fafafa' : '#fff'}; margin-bottom:10px;">
                         <div style="display:flex; justify-content:space-between; margin-bottom:10px;">
@@ -3948,6 +4130,7 @@
             let order = myOrders.find(o => o.id === orderId);
             if(!order) return;
             order.status = "已取消";
+            saveOrdersData();
             
             // 將庫存加回
             order.items.forEach(item => {
@@ -3965,7 +4148,8 @@
         function simulateStayCompleted(orderId) {
             let order = myOrders.find(o => o.id === orderId);
             if(order) {
-                order.status = "已完成";
+                order.status = "已退房";
+                saveOrdersData();
                 openMyOrdersModal();
             }
         }
@@ -3973,7 +4157,8 @@
         function openReviewModal(orderId) {
             document.getElementById("reviewOrderId").value = orderId;
             document.getElementById("reviewText").value = "";
-            document.getElementById("reviewRating").value = "5";
+            document.getElementById("reviewRatingOverall").value = "5";
+            document.getElementById("reviewRatingFacilities").value = "5";
             document.getElementById("reviewModal").style.display = "flex";
         }
 
@@ -4003,6 +4188,7 @@
             });
 
             order.isReviewed = true;
+            saveOrdersData();
             document.getElementById("reviewModal").style.display = "none";
             alert("評價已送出！感謝您的回饋！");
             openMyOrdersModal(); // 更新清單狀態
@@ -4033,20 +4219,126 @@
                     switchAdminChatSession(chatSessions[0].sessionId);
                 }
             }
+            if (tab === 'reviews') {
+                renderAdminReviews();
+            }
         }
 
         let currentAdminChatSessionId = null;
 
+        function renderAdminReviews() {
+            let container = document.getElementById("adminReviewList");
+            if(!container) return;
+            if(allReviews.length === 0) {
+                container.innerHTML = "<div style='color:#888; text-align:center;'>目前尚無任何評價紀錄。</div>";
+                return;
+            }
+            
+            let html = "";
+            allReviews.forEach(r => {
+                let ratingHtml = `<span style="color:#F5A623;">` + "★".repeat(Math.round(r.ratingOverall)) + "☆".repeat(5-Math.round(r.ratingOverall)) + `</span>`;
+                let facHtml = `<span style="color:#F5A623;">` + "★".repeat(Math.round(r.ratingFacilities)) + "☆".repeat(5-Math.round(r.ratingFacilities)) + `</span>`;
+                
+                html += `
+                <div style="border:1px solid #eee; border-radius:8px; padding:15px; background:#fafafa;">
+                    <div style="display:flex; justify-content:space-between; margin-bottom:10px;">
+                        <span style="font-weight:bold; color:var(--primary-earth);">${r.propName} <span style="color:#888; font-size:13px;">(${r.roomName})</span></span>
+                        <span style="font-size:12px; color:#888;">評論時間：${r.time}</span>
+                    </div>
+                    <div style="font-size:13px; color:var(--text-main); margin-bottom:8px;">
+                        <strong>住客：</strong>${r.user} <br>
+                        <strong>整體：</strong>${ratingHtml} (${r.ratingOverall}) <span style="margin-left:15px;"><strong>設備：</strong>${facHtml} (${r.ratingFacilities})</span>
+                    </div>
+                    <div style="background:white; padding:10px; border:1px solid #eee; border-radius:4px; font-size:13px; color:#555; margin-bottom:10px;">
+                        ${r.comment}
+                    </div>
+                    `;
+                
+                if(r.replyText) {
+                    html += `
+                    <div style="margin-top:10px; padding-left:15px; border-left:3px solid var(--accent-earth);">
+                        <div style="font-size:12px; color:#888; margin-bottom:4px;">房東回覆 (${r.replyTime})：</div>
+                        <div style="font-size:13px; color:var(--primary-earth);">${r.replyText}</div>
+                    </div>`;
+                } else {
+                    html += `
+                    <div style="margin-top:10px; display:flex; gap:10px;">
+                        <input type="text" id="replyInput_${r.id}" class="form-control" placeholder="在此輸入回覆..." style="flex:1;">
+                        <button class="btn btn-outline btn-sm" onclick="replyToReview('${r.id}')">回覆</button>
+                    </div>`;
+                }
+                html += `</div>`;
+            });
+            container.innerHTML = html;
+        }
+
+        function replyToReview(reviewId) {
+            let input = document.getElementById("replyInput_" + reviewId);
+            if(!input || !input.value.trim()) {
+                alert("請輸入回覆內容！");
+                return;
+            }
+            let r = allReviews.find(x => x.id == reviewId);
+            if(r) {
+                r.replyText = input.value.trim();
+                r.replyTime = new Date().toLocaleString('zh-TW', { hour12: false });
+                saveReviewsData();
+                renderAdminReviews();
+                alert("回覆已送出！");
+            }
+        }
+        
+        function renderPropReviews(propId) {
+            let container = document.getElementById("propDetailReviews");
+            if(!container) return;
+            let propReviews = allReviews.filter(r => r.propId === propId);
+            
+            if(propReviews.length === 0) {
+                container.innerHTML = "<div style='color:var(--text-muted); font-size:13px;'>暫無評價</div>";
+                return;
+            }
+            
+            let html = "";
+            propReviews.forEach(r => {
+                let ratingHtml = `<span style="color:#FFA000; font-size:12px;">` + "★".repeat(Math.round(r.ratingOverall)) + "☆".repeat(5-Math.round(r.ratingOverall)) + `</span>`;
+                html += `
+                <div style="margin-bottom:15px;">
+                    <div><strong>${r.user}</strong> <span style="font-size:11px; color:#aaa; margin-left:5px;">${r.time}</span></div>
+                    <div style="margin-bottom:4px;">整體: ${ratingHtml} <span style="margin-left:10px;">設備: <span style="color:#FFA000; font-size:12px;">${"★".repeat(Math.round(r.ratingFacilities))}${"☆".repeat(5-Math.round(r.ratingFacilities))}</span></span></div>
+                    <div style="font-size:13px; color:#444;">${r.comment}</div>`;
+                
+                if(r.replyText) {
+                    html += `
+                    <div style="margin-top:8px; padding-left:10px; border-left:2px solid var(--primary-earth); background:#f5f5f5; padding-top:5px; padding-bottom:5px; border-radius:0 4px 4px 0;">
+                        <strong style="color:var(--primary-earth); font-size:11px;">房東回覆 (${r.replyTime}):</strong>
+                        <div style="font-size:12px; color:#555;">${r.replyText}</div>
+                    </div>`;
+                }
+                html += `</div>`;
+            });
+            container.innerHTML = html;
+        }
+
         function renderAdminOrders() {
             let html = "";
             myOrders.forEach(o => {
-                let itemsHtml = o.items.map(i => `<div>${i.name} ($${i.price})</div>`).join('');
+                let itemsHtml = o.items.map(i => `<div style="font-weight:bold;">${i.name} ($${i.price})</div>`).join('');
+                let details = `<div style="font-size:12px; color:#666; margin-top:4px;">入住: ${o.checkIn} ~ 退房: ${o.checkOut} | ${o.guests}位</div>`;
+                let payMap = {'CC':'信用卡', 'Mobile':'電子支付', 'Bank':'銀行轉帳'};
+                let payMethodStr = payMap[o.paymentMethod] || '尚未付款';
                 let total = o.items.reduce((sum, x) => sum + x.price, 0);
+
                 html += `<tr>
-                    <td style="font-weight:bold;">${o.id}</td>
-                    <td>目前的顧客</td>
-                    <td style="font-size:12px;">${itemsHtml}</td>
-                    <td style="color:var(--danger-color); font-weight:bold;">$${total}</td>
+                    <td style="font-weight:bold;">
+                        <div style="font-size:11px; color:#888; font-weight:normal;">${o.date}</div>
+                        ${o.id}
+                    </td>
+                    <td style="text-align:left;">
+                        ${itemsHtml}
+                        ${details}
+                    </td>
+                    <td><span style="background:#f4f4f4; padding:2px 6px; border-radius:4px; font-size:12px;">${payMethodStr}</span></td>
+                    <td style="color:var(--danger-color); font-weight:bold; font-size:16px;">$${total}</td>
                     <td><span style="background:#EAF2EC; padding:4px 8px; border-radius:12px; font-size:12px;">${o.status}</span></td>
                     <td>
                         <button class="btn btn-outline btn-sm" onclick="contactUserFromOrder('${o.id}')"><i class="fa-solid fa-message"></i> 聯絡顧客</button>
@@ -4087,8 +4379,9 @@
                 let isActive = s.sessionId === currentAdminChatSessionId;
                 let contextName = s.contextId === "general" ? "一般客服" : "房源: " + (allProperties.find(p=>'prop_'+p.id === s.contextId)?.name || s.contextId);
                 let lastMsg = s.messages.length > 0 ? s.messages[s.messages.length - 1].text : "無訊息";
+                let displayUser = s.user === "目前的顧客" ? "未知顧客" : s.user;
                 html += `<div style="padding:10px; border-radius:4px; font-weight:bold; cursor:pointer; margin-bottom:5px; background:${isActive ? 'var(--primary-earth)' : '#F2F5F3'}; color:${isActive ? 'white' : 'var(--text-main)'};" onclick="switchAdminChatSession(${s.sessionId})">
-                    <div style="font-size:14px;">${s.user}</div>
+                    <div style="font-size:14px;">${displayUser}</div>
                     <div style="font-size:11px; color:${isActive ? '#eee' : '#888'}; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${contextName} - ${lastMsg}</div>
                 </div>`;
             });
@@ -4113,14 +4406,25 @@
                     contextName = p ? ("房源詢問: " + p.name) : session.contextId;
                 }
                 
-                document.getElementById("adminChatHeader").innerHTML = `<i class="fa-solid fa-comments"></i> 正在與「${session.user}」對話 <span style="font-size:12px; font-weight:normal; margin-left:10px; background:rgba(255,255,255,0.2); padding:3px 10px; border-radius:12px;">${contextName}</span>`;
+                let displayUser = session.user === "目前的顧客" ? "未知顧客" : session.user;
+                document.getElementById("adminChatHeader").innerHTML = `<i class="fa-solid fa-comments"></i> 正在與「${displayUser}」對話 <span style="font-size:12px; font-weight:normal; margin-left:10px; background:rgba(255,255,255,0.2); padding:3px 10px; border-radius:12px;">${contextName}</span>`;
 
                 session.messages.forEach(msg => {
-                    if(msg.sender === "admin") {
-                        html += `<div style="align-self:flex-end; background:var(--primary-earth); color:white; padding:8px 12px; border-radius:12px 12px 0 12px; max-width:80%; font-size:13px;">${msg.text}</div>
-                                 <div style="align-self:flex-end; font-size:10px; color:#aaa; margin-top:-6px; margin-bottom:6px;">${msg.time || ''}</div>`;
+                    if (msg.isRecalled) {
+                        let isMe = msg.sender === "admin";
+                        html += `<div style="align-self:${isMe ? 'flex-end' : 'flex-start'}; background:transparent; color:#aaa; font-style:italic; padding:4px 0; font-size:12px; margin-bottom:10px;">此訊息已收回</div>`;
+                    } else if(msg.sender === "admin") {
+                        let recallBtn = `<span style="font-size:10px; color:#aaa; cursor:pointer; margin-left:8px;" onclick="recallMessage(${session.sessionId}, '${msg.id}')"><i class="fa-solid fa-rotate-left"></i> 收回</span>`;
+                        html += `<div style="align-self:flex-end; background:var(--primary-earth); color:white; padding:8px 12px; border-radius:12px 12px 0 12px; max-width:80%; font-size:13px;">
+                                    <div style="font-size:10px; opacity:0.7; margin-bottom:4px;">房東 (我)</div>
+                                    ${msg.text}
+                                 </div>
+                                 <div style="align-self:flex-end; font-size:10px; color:#aaa; margin-top:-6px; margin-bottom:6px;">${msg.time || ''}${recallBtn}</div>`;
                     } else {
-                        html += `<div style="align-self:flex-start; background:white; border:1px solid #eee; color:var(--text-main); padding:8px 12px; border-radius:12px 12px 12px 0; max-width:80%; font-size:13px;">${msg.text}</div>
+                        html += `<div style="align-self:flex-start; background:white; border:1px solid #eee; color:var(--text-main); padding:8px 12px; border-radius:12px 12px 12px 0; max-width:80%; font-size:13px;">
+                                    <div style="font-size:10px; opacity:0.5; margin-bottom:4px;">顧客</div>
+                                    ${msg.text}
+                                 </div>
                                  <div style="align-self:flex-start; font-size:10px; color:#aaa; margin-top:-6px; margin-bottom:6px;">${msg.time || ''}</div>`;
                     }
                 });
@@ -4140,7 +4444,7 @@
             let session = chatSessions.find(s => s.sessionId === currentAdminChatSessionId);
             if(!session) return;
             
-            session.messages.push({ sender: "admin", text: text, time: getCurrentTimeStr() });
+            session.messages.push({ id: Date.now().toString() + Math.random().toString(), sender: "admin", text: text, time: getCurrentTimeStr() });
             saveChatSessions();
             input.value = "";
             
@@ -4281,9 +4585,20 @@
                     <td><del style="color:var(--text-muted)">$${log.oldPrice}</del></td>
                     <td style="color:var(--danger-color); font-weight:bold;">$${log.newPrice}</td>
                     <td><span style="background:#EAF2EC; color:var(--primary-earth); padding:2px 6px; border-radius:10px; font-size:12px;">${log.discountType}</span></td>
-                    <td><button class="btn btn-outline btn-sm" onclick="restorePricing(${log.id})">復原此版本</button></td>
+                    <td>
+                        <button class="btn btn-outline btn-sm" onclick="restorePricing(${log.id})">復原此版本</button>
+                        <button class="btn btn-outline btn-sm" style="color:var(--danger-color); border-color:var(--danger-color); margin-left:5px;" onclick="deletePricingLog(${log.id})"><i class="fa-solid fa-trash"></i> 刪除</button>
+                    </td>
                 </tr>`;
             });
+        }
+
+        function deletePricingLog(logId) {
+            if(confirm('確定要刪除這筆優惠異動紀錄嗎？此操作無法復原。')) {
+                pricingLogs = pricingLogs.filter(x => x.id !== logId);
+                renderPricingLogs();
+                alert('已成功刪除該筆紀錄！');
+            }
         }
 
         function restorePricing(logId) {
