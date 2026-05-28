@@ -311,7 +311,7 @@
                             <i class="fa-solid fa-user-lock"></i> <span>旅伴 鄭禹岑 正在編排此站點...</span>
                         </div>
                         <div class="form-group" style="border-bottom:1px solid var(--border-color); padding-bottom:12px; margin-bottom:12px;">
-                            <label style="color:var(--primary-color);"><i class="fa-solid fa-magnifying-glass"></i> 關鍵字搜尋 (所有站點與景點)</label>
+                            <label style="color:var(--primary-earth);"><i class="fa-solid fa-magnifying-glass"></i> 關鍵字搜尋 (所有站點與景點)</label>
                             <input type="text" id="globalSearchBox" class="form-control" placeholder="輸入景點或車站名稱 (例如: 臭豆腐, 新城)..." oninput="triggerGlobalSearch(this.value)">
                         </div>
                         <div class="form-group">
@@ -2312,7 +2312,7 @@
                         let hasVoted = currentUser && safeVoters.includes(currentUser.email);
                         let isHighest = maxVotes > 0 && safeVoters.length === maxVotes;
                         let bg = hasVoted ? '#E8F5E9' : '#FAF9F6';
-                        let border = hasVoted ? 'var(--primary-color)' : 'var(--border-color)';
+                        let border = hasVoted ? 'var(--primary-earth)' : 'var(--border-color)';
                         let highestBadge = isHighest ? '<span style="font-size:10px; background:var(--accent-earth); color:white; padding:2px 4px; border-radius:4px; margin-left:4px;">最高票</span>' : '';
                         
                         let voterNames = safeVoters.map(vEmail => {
@@ -2864,10 +2864,12 @@
 
         function renderSpotChatMessages() {
             if (currentSpotChatContext.dayIndex === null) return;
-            let item = selectedTripContextObj.itinerary[currentSpotChatContext.dayIndex].find(i => i.id === currentSpotChatContext.spotId);
+            let item = selectedTripContextObj.itinerary[currentSpotChatContext.dayIndex].find(i => i.id == currentSpotChatContext.spotId);
             if (!item) return;
 
             const msgContainer = document.getElementById("spotChatMessages");
+            if (!msgContainer) return;
+            
             let html = "";
             if (!item.comments || item.comments.length === 0) {
                 html = `<div style="text-align:center; color:var(--text-muted); font-style:italic; padding:20px;">尚無留言，來搶頭香吧！</div>`;
@@ -2875,13 +2877,13 @@
                 item.comments.forEach(c => {
                     let isMe = currentUser && c.email === currentUser.email;
                     let align = isMe ? "flex-end" : "flex-start";
-                    let bg = isMe ? "var(--primary-color)" : "#FAF9F6";
+                    let bg = isMe ? "var(--primary-earth)" : "#FAF9F6";
                     let color = isMe ? "white" : "var(--text-main)";
-                    let nameDisplay = isMe ? "我" : c.user;
+                    let nameDisplay = isMe ? "我" : (c.user || "匿名");
                     html += `
                         <div style="margin-bottom:12px; display:flex; flex-direction:column; align-items:${align};">
-                            <div style="font-size:10px; color:var(--text-muted); margin-bottom:2px;">${nameDisplay} <span style="opacity:0.7">${c.time}</span></div>
-                            <div style="background:${bg}; border:1px solid var(--border-color); padding:6px 10px; border-radius:8px; display:inline-block; font-size:13px; color:${color}; max-width:85%;">
+                            <div style="font-size:10px; color:var(--text-muted); margin-bottom:2px;">${nameDisplay} <span style="opacity:0.7">${c.time || ""}</span></div>
+                            <div style="background:${bg}; border:1px solid var(--border-color); padding:6px 10px; border-radius:8px; display:inline-block; font-size:13px; color:${color}; max-width:85%; word-break:break-word;">
                                 ${c.text}
                             </div>
                         </div>
@@ -2889,7 +2891,9 @@
                 });
             }
             msgContainer.innerHTML = html;
-            msgContainer.scrollTop = msgContainer.scrollHeight;
+            setTimeout(() => {
+                msgContainer.scrollTop = msgContainer.scrollHeight;
+            }, 50);
         }
 
         function sendSpotComment() {
@@ -2899,10 +2903,12 @@
                 return;
             }
             
-            let item = selectedTripContextObj.itinerary[currentSpotChatContext.dayIndex].find(i => i.id === currentSpotChatContext.spotId);
+            let item = selectedTripContextObj.itinerary[currentSpotChatContext.dayIndex].find(i => i.id == currentSpotChatContext.spotId);
             if (!item) return;
 
             let input = document.getElementById("spotChatInput");
+            if (!input) return;
+            
             let text = input.value.trim();
             if (!text) return;
 
@@ -2912,8 +2918,8 @@
             let timeStr = `${now.getHours().toString().padStart(2, '0')}:${now.getMinutes().toString().padStart(2, '0')}`;
             
             item.comments.push({
-                user: currentUser.name,
-                email: currentUser.email,
+                user: currentUser.name || "使用者",
+                email: currentUser.email || "guest@example.com",
                 text: text,
                 time: timeStr
             });
@@ -2921,6 +2927,9 @@
             saveTripsData();
             input.value = "";
             renderSpotChatMessages();
+            
+            // update timeline count dynamically
+            renderDetailedItineraryTimeline();
         }
         // ================= C模組: 聊天室邏輯 =================
         let chatSessions = [];
@@ -3269,6 +3278,17 @@
         </div>
     </div>
 
+    <!-- 訂單詳細 Modal -->
+    <div class="modal-overlay" id="orderDetailModal" style="z-index: 2000;">
+        <div class="modal-box" style="max-width:500px;">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
+                <h3 style="color:var(--primary-earth); margin:0;"><i class="fa-solid fa-file-invoice"></i> 訂單詳細資訊</h3>
+                <i class="fa-solid fa-xmark" style="cursor:pointer; font-size:20px;" onclick="document.getElementById('orderDetailModal').style.display='none'"></i>
+            </div>
+            <div id="orderDetailContent" style="font-size:14px; line-height:1.6; color:var(--text-main);"></div>
+        </div>
+    </div>
+
     <!-- 填寫評價 Modal -->
     <div class="modal-overlay" id="reviewModal" style="z-index: 2000;">
         <div class="modal-box" style="max-width:400px;">
@@ -3522,6 +3542,7 @@
             alert("評價已送出，感謝您的回饋！");
             openMyOrdersModal();
             if(document.getElementById('screenAccommodation').classList.contains('active')) renderProperties();
+            renderAdminReviews();
         }
 
         // 擴充畫面切換邏輯
@@ -3554,6 +3575,22 @@
 
             if(screenId === 'screenAccommodation') renderProperties();
             if(screenId === 'screenAdmin') renderAdminProps();
+        }
+
+        function getPropRatingInfo(propId) {
+            let p = allProperties.find(x => x.id === propId);
+            let reviews = allReviews.filter(r => r.propId === propId);
+            if (reviews.length > 0) {
+                let sum = reviews.reduce((a, b) => a + b.ratingOverall, 0);
+                return {
+                    rating: (sum / reviews.length).toFixed(1),
+                    count: reviews.length
+                };
+            }
+            return {
+                rating: p ? p.rating.toFixed(1) : "0.0",
+                count: 0
+            };
         }
 
         function renderProperties(isSearchAction = false) {
@@ -3595,14 +3632,14 @@
             if (roomFilter !== 'all') {
                 filtered = filtered.filter(p => p.roomTypes.some(rt => rt.name.includes(roomFilter)));
             }
-            if (ratingFilter !== 'all') filtered = filtered.filter(p => p.rating >= parseFloat(ratingFilter));
+            if (ratingFilter !== 'all') filtered = filtered.filter(p => parseFloat(getPropRatingInfo(p.id).rating) >= parseFloat(ratingFilter));
             if (amenityFilter !== 'all') filtered = filtered.filter(p => p.amenities.includes(amenityFilter));
             if (distFilter !== 'all') filtered = filtered.filter(p => p.distMeters <= parseInt(distFilter));
             
             const getMinPrice = (p) => p.roomTypes.reduce((min, rt) => rt.price < min ? rt.price : min, Infinity);
             
             if(sortMode === 'priceLow') filtered.sort((a,b) => getMinPrice(a) - getMinPrice(b));
-            if(sortMode === 'ratingHigh') filtered.sort((a,b) => b.rating - a.rating);
+            if(sortMode === 'ratingHigh') filtered.sort((a,b) => parseFloat(getPropRatingInfo(b.id).rating) - parseFloat(getPropRatingInfo(a.id).rating));
             if(sortMode === 'distNear') filtered.sort((a,b) => a.distMeters - b.distMeters);
 
             if(filtered.length === 0) {
@@ -3623,7 +3660,7 @@
                                 <i class="fa-solid fa-heart wishlist-btn ${wishlistItems.includes(p.id) ? 'active' : ''}" onclick="event.stopPropagation(); toggleWishlistProp(${p.id}, this)"></i>
                             </div>
                             <div class="prop-dist"><i class="fa-solid fa-location-dot"></i> ${distDisplay} (${p.station})</div>
-                            <div class="prop-rating"><i class="fa-solid fa-star"></i> ${p.rating} (128則評價)</div>
+                            <div class="prop-rating"><i class="fa-solid fa-star"></i> ${getPropRatingInfo(p.id).rating} (${getPropRatingInfo(p.id).count}則評價)</div>
                             <div class="prop-price">
                                 <span>$${fakeOriginalPrice}</span> $${minPrice} <span style="font-size:12px; font-weight:normal;">起</span>
                                 <div style="font-size:10px; color:var(--text-main); font-weight:normal; margin-top:4px; background:#EAF2EC; display:inline-block; padding:2px 6px; border-radius:4px;">最佳優惠價 (含早鳥)</div>
@@ -3643,7 +3680,7 @@
             document.getElementById("propDetailDesc").innerText = p.desc;
             document.getElementById("propDetailLocation").innerText = p.locationDesc || "位置資訊未提供";
             document.getElementById("propDetailPolicies").innerText = p.policies || "無特殊規範";
-            document.getElementById("propDetailRating").innerText = p.rating + " 顆星";
+            document.getElementById("propDetailRating").innerText = getPropRatingInfo(p.id).rating + " 顆星 (" + getPropRatingInfo(p.id).count + "則評價)";
             
             document.getElementById("propDetailAmenities").innerHTML = p.amenities.map(a => `<span style="background:#F2F5F3; padding:4px 8px; border-radius:4px; font-size:12px; color:var(--text-muted);"><i class="fa-solid fa-check" style="color:var(--primary-earth)"></i> ${a}</span>`).join('');
             
@@ -3755,18 +3792,95 @@
 
         function toggleCartDrawer() { document.getElementById("cartDrawer").classList.toggle("open"); renderCart(); }
 
+        function cancelOrder(orderId) {
+            let order = myOrders.find(o => o.id === orderId);
+            if(!order) return;
+            
+            let refundMsg = "取消訂單確認：\n\n";
+            let today = new Date();
+            today.setHours(0, 0, 0, 0);
+            
+            let checkInDate = new Date(order.checkIn);
+            let refundRate = 1;
+            let feeRate = 0;
+            
+            if (isNaN(checkInDate.getTime()) || order.checkIn === "未定") {
+                refundMsg += "入住日期未定，適用全額退款。\n";
+            } else {
+                checkInDate.setHours(0, 0, 0, 0);
+                let diffTime = checkInDate - today;
+                let diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+                
+                if (diffDays >= 10) {
+                    refundRate = 1; feeRate = 0;
+                    refundMsg += `距離入住還有 ${diffDays} 天 (10天以上)。\n根據政策：全額退費 (0% 費用)。\n`;
+                } else if (diffDays >= 4 && diffDays <= 9) {
+                    refundRate = 0.7; feeRate = 0.3;
+                    refundMsg += `距離入住還有 ${diffDays} 天 (4~9天)。\n根據政策：收取 30% 房費作為補償。\n`;
+                } else {
+                    refundRate = 0; feeRate = 1;
+                    refundMsg += `距離入住還有 ${diffDays} 天 (3天內)。\n根據政策：不退還金額 (100% 費用)。\n`;
+                }
+            }
+            
+            let fee = Math.round(order.totalPrice * feeRate);
+            let refund = order.totalPrice - fee;
+            refundMsg += `\n訂單總額：$${order.totalPrice}\n取消補償費：$${fee}\n可退還金額：$${refund}\n\n您確定要取消這筆訂單嗎？`;
+            
+            if(!confirm(refundMsg)) return;
+
+            order.status = "已取消";
+            order.refundAmount = refund;
+            order.cancellationFee = fee;
+            saveOrdersData();
+            
+            // 將庫存加回
+            order.items.forEach(item => {
+                let p = allProperties.find(x => x.id === item.propId);
+                if(p) {
+                    let rt = p.roomTypes.find(x => x.id === item.roomId);
+                    if(rt) rt.quantity += 1;
+                }
+            });
+        }
+
         function addRoomTypeToCart(propId, roomId) {
             let p = allProperties.find(x => x.id === propId);
             if (!p) return;
             let rt = p.roomTypes.find(x => x.id === roomId);
             if (!rt) return;
             
+            let nights = 1;
+            let checkInVal = document.getElementById("accCheckIn").value;
+            let checkOutVal = document.getElementById("accCheckOut").value;
+            if(checkInVal && checkOutVal) {
+                let d1 = new Date(checkInVal);
+                let d2 = new Date(checkOutVal);
+                let diffTime = d2 - d1;
+                let diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+                if(diffDays > 0) nights = diffDays;
+            }
+
+            let basePrice = rt.price;
+            let finalPricePerNight = basePrice;
+            if (rt.pricingRules) {
+                basePrice = rt.pricingRules.basePrice || rt.price;
+                let calculated = basePrice * rt.pricingRules.earlyBirdDiscount;
+                calculated -= rt.pricingRules.pointDiscount;
+                if(calculated < 0) calculated = 0;
+                finalPricePerNight = Math.round(calculated);
+            }
+            let finalPriceTotal = finalPricePerNight * nights;
+            
             cartItems.push({
                 propId: p.id,
                 roomId: rt.id,
                 name: `${p.name} - ${rt.name}`,
                 station: p.station,
-                price: rt.price,
+                price: finalPriceTotal,
+                basePriceTotal: basePrice * nights,
+                discountTotal: (basePrice - finalPricePerNight) * nights,
+                nights: nights,
                 checked: true
             });
             document.getElementById("cartBadge").style.display = "inline-block";
@@ -4112,11 +4226,20 @@
                             <span style="font-size:12px; color:#888;">${order.date}</span>
                         </div>
                         <div style="font-size:13px; color:var(--text-main); margin-bottom:10px; ${isCanceled ? 'text-decoration:line-through; color:#aaa;' : ''}">
-                            ${order.items.map(item => `<div>${item.name} ($${item.price})</div>`).join('')}
+                            ${order.items.map(item => {
+                                let priceStr = `($${item.price})`;
+                                if (item.basePriceTotal && item.basePriceTotal > item.price) {
+                                    priceStr = `(<span style="text-decoration:line-through; color:#aaa;">$${item.basePriceTotal}</span> <span style="color:var(--danger-color); font-weight:bold;">$${item.price}</span>)`;
+                                }
+                                return `<div>${item.name} ${priceStr}</div>`;
+                            }).join('')}
                         </div>
                         <div style="display:flex; justify-content:space-between; align-items:center; border-top:1px solid #f5f5f5; padding-top:10px;">
                             <span style="font-size:12px; background:${statusBg}; color:${statusColor}; padding:2px 8px; border-radius:10px;">狀態：${order.status}</span>
-                            <div>${actionHtml}</div>
+                            <div>
+                                <button class="btn btn-outline btn-sm" style="margin-right:5px; border-color:#ccc; color:#555;" onclick="viewOrderDetail('${order.id}')"><i class="fa-solid fa-circle-info"></i> 詳情</button>
+                                ${actionHtml}
+                            </div>
                         </div>
                     </div>`;
                 });
@@ -4125,25 +4248,53 @@
             document.getElementById("myOrdersModal").style.display = "flex";
         }
 
-        function cancelOrder(orderId) {
-            if(!confirm("確定要取消此訂單嗎？取消後無法還原。")) return;
+        function viewOrderDetail(orderId) {
             let order = myOrders.find(o => o.id === orderId);
             if(!order) return;
-            order.status = "已取消";
-            saveOrdersData();
             
-            // 將庫存加回
-            order.items.forEach(item => {
-                let p = allProperties.find(x => x.id === item.propId);
-                if(p) {
-                    let rt = p.roomTypes.find(x => x.id === item.roomId);
-                    if(rt) rt.quantity += 1;
-                }
-            });
-            alert("訂單已取消，房間庫存已釋放。");
-            openMyOrdersModal();
-            if(document.getElementById('screenAccommodation').classList.contains('active')) renderProperties();
+            let isCanceled = order.status === "已取消";
+            
+            let html = `
+                <div style="margin-bottom:15px;">
+                    <strong>訂單編號：</strong> ${order.id}<br>
+                    <strong>下單時間：</strong> ${order.date}<br>
+                    <strong>入住日期：</strong> ${order.checkIn || "未定"} &nbsp; <strong>退房日期：</strong> ${order.checkOut || "未定"}<br>
+                    <strong>入住人數：</strong> ${order.guests || 2} 人<br>
+                    <strong>訂單狀態：</strong> <span style="font-weight:bold; color:${isCanceled ? '#888' : 'var(--primary-earth)'};">${order.status}</span>
+                </div>
+                <div style="border-top:1px solid #eee; padding-top:15px; margin-bottom:15px;">
+                    <strong>預訂房型：</strong><br>
+                    ${order.items.map(item => {
+                        let priceStr = `($${item.price})`;
+                        if (item.basePriceTotal && item.basePriceTotal > item.price) {
+                            priceStr = `(<span style="text-decoration:line-through; color:#aaa;">$${item.basePriceTotal}</span> <span style="color:var(--danger-color); font-weight:bold;">$${item.price}</span>)`;
+                        }
+                        return `<div style="padding-left:10px; margin-top:5px;">- ${item.name} ${priceStr}</div>`;
+                    }).join('')}
+                </div>
+                <div style="border-top:1px solid #eee; padding-top:15px;">
+                    <div style="display:flex; justify-content:space-between; align-items:center;">
+                        <strong>訂單總額：</strong>
+                        <span style="font-size:18px; font-weight:bold; color:var(--danger-color);">$${order.totalPrice}</span>
+                    </div>
+                </div>
+            `;
+            
+            if (isCanceled && order.cancellationFee !== undefined) {
+                html += `
+                <div style="margin-top:15px; background:#f9f9f9; padding:10px; border-radius:6px; font-size:13px;">
+                    <strong>取消資訊：</strong><br>
+                    取消補償費：$${order.cancellationFee}<br>
+                    可退還金額：$${order.refundAmount}
+                </div>
+                `;
+            }
+            
+            document.getElementById("orderDetailContent").innerHTML = html;
+            document.getElementById("orderDetailModal").style.display = "flex";
         }
+
+
 
         function simulateStayCompleted(orderId) {
             let order = myOrders.find(o => o.id === orderId);
@@ -4162,39 +4313,7 @@
             document.getElementById("reviewModal").style.display = "flex";
         }
 
-        function submitReview() {
-            let orderId = document.getElementById("reviewOrderId").value;
-            let rating = parseFloat(document.getElementById("reviewRating").value);
-            let comment = document.getElementById("reviewText").value;
-            
-            let order = myOrders.find(o => o.id === orderId);
-            if(!order) return;
-            
-            // 將評價加入該訂單內包含的所有房源
-            order.items.forEach(item => {
-                let p = allProperties.find(x => x.id === item.propId);
-                if(p) {
-                    p.reviews.unshift({
-                        id: Date.now() + Math.random(),
-                        user: "遊客郭又榛",
-                        rating: rating,
-                        comment: comment || "未提供文字評論",
-                        date: new Date().toLocaleDateString()
-                    });
-                    // 重新計算平均星級
-                    let totalRating = p.reviews.reduce((sum, r) => sum + r.rating, 0);
-                    p.rating = (totalRating / p.reviews.length).toFixed(1);
-                }
-            });
 
-            order.isReviewed = true;
-            saveOrdersData();
-            document.getElementById("reviewModal").style.display = "none";
-            alert("評價已送出！感謝您的回饋！");
-            openMyOrdersModal(); // 更新清單狀態
-            
-            if(document.getElementById('screenAccommodation').classList.contains('active')) renderProperties();
-        }
 
 
         // 後台切換
