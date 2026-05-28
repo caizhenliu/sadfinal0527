@@ -506,7 +506,8 @@
                 <div class="admin-nav-item active" onclick="switchAdminTab('props')"><i class="fa-solid fa-hotel"></i> 房源管理</div>
                 <div class="admin-nav-item" onclick="switchAdminTab('pricing')"><i class="fa-solid fa-tags"></i> 定價與折扣引擎</div>
                 <div class="admin-nav-item" onclick="switchAdminTab('orders')"><i class="fa-solid fa-list-check"></i> 訂單與防疊機制</div>
-                <div class="admin-nav-item" onclick="switchAdminTab('chat')"><i class="fa-solid fa-comments"></i> 客服與評價管理</div>
+                <div class="admin-nav-item" onclick="switchAdminTab('chat')"><i class="fa-solid fa-comments"></i> 客服系統</div>
+                <div class="admin-nav-item" onclick="switchAdminTab('reviews')"><i class="fa-solid fa-star"></i> 評價管理</div>
             </div>
             
             <div class="admin-content" id="adminContentPanel">
@@ -4324,6 +4325,7 @@
             document.getElementById('adminTab-pricing').style.display = 'none';
             document.getElementById('adminTab-orders').style.display = 'none';
             document.getElementById('adminTab-chat').style.display = 'none';
+            document.getElementById('adminTab-reviews').style.display = 'none';
             document.getElementById('adminTab-' + tab).style.display = 'block';
             if (tab === 'pricing') {
                 populatePricingProps();
