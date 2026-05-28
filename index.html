@@ -6,6 +6,7 @@
     <title>Agent TT - 智慧旅遊規劃平台 (暨大資管第七組專題)</title>
     <script src="https://unpkg.com/peerjs@1.5.2/dist/peerjs.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="module_c.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         /* 嚴格採用 SAD 報告規範之大地色系 (森林深綠、原木褐、沙灘米白) */
@@ -181,6 +182,7 @@
         </div>
         <div style="display:flex; align-items:center; gap: 8px;">
             <button class="btn btn-outline" style="color: white; border-color: rgba(255,255,255,0.3);" id="btnNavAccommodation" onclick="switchScreen('screenAccommodation')"><i class="fa-solid fa-hotel"></i> 找房源</button>
+            <button class="btn btn-outline" style="color: white; border-color: rgba(255,255,255,0.3);" id="btnNavTrainTicket" onclick="switchScreen('screenTrainTicket')"><i class="fa-solid fa-train"></i> 找車票</button>
             <button class="btn btn-outline" style="color: white; border-color: rgba(255,255,255,0.3);" id="btnNavMyOrders" onclick="openMyOrdersModal()"><i class="fa-solid fa-list-check"></i> 我的訂單</button>
             <button class="btn btn-outline" style="color: white; border-color: rgba(255,255,255,0.3);" id="btnNavMyMessages" onclick="openMyMessagesModal()"><i class="fa-solid fa-envelope"></i> 我的訊息</button>
             <button class="btn btn-outline" style="color: white; border-color: rgba(255,255,255,0.3);" onclick="openAccountModal()"><i class="fa-solid fa-user"></i> <span id="headerUserName">會員</span></button>
@@ -495,6 +497,310 @@
             <!-- 房源卡片區 -->
             <div class="property-grid" id="propertyGridContainer">
                 <!-- JS動態生成房源卡片 -->
+            </div>
+        </div>
+    </div>
+
+    <!-- ================= C模組: 台鐵車票服務 ================= -->
+    <div class="view-screen" id="screenTrainTicket">
+        <div class="main-dashboard">
+            <div style="margin-bottom: 15px;">
+                <button class="btn btn-outline" style="height: 38px; border-color:#ccc; color:#555;" onclick="switchScreen('screenDashboard')">
+                    <i class="fa-solid fa-arrow-left"></i> 返回主畫面
+                </button>
+            </div>
+            
+            <div class="toolbar" style="background: white; padding: 20px; border-radius: 12px; box-shadow: 0 2px 10px rgba(0,0,0,0.05);">
+                <h2 style="color:var(--primary-earth); margin-bottom: 15px;"><i class="fa-solid fa-train"></i> 台鐵車次查詢</h2>
+                <div style="display:flex; gap: 15px; flex-wrap: wrap; width: 100%; align-items: flex-end;">
+                    <div class="form-group" style="margin:0; flex:1; min-width:150px;">
+                        <label>出發站</label>
+                        <select id="trainSearchOrigin" class="form-control">
+                            <option value="和平車站">和平車站</option>
+                            <option value="和仁車站">和仁車站</option>
+                            <option value="崇德車站">崇德車站</option>
+                            <option value="新城車站">新城車站</option>
+                            <option value="北埔車站">北埔車站</option>
+                            <option value="花蓮車站" selected>花蓮車站</option>
+                            <option value="吉安車站">吉安車站</option>
+                            <option value="志學車站">志學車站</option>
+                            <option value="壽豐車站">壽豐車站</option>
+                            <option value="豐田車站">豐田車站</option>
+                            <option value="林榮新光車站">林榮新光車站</option>
+                            <option value="南平車站">南平車站</option>
+                            <option value="鳳林車站">鳳林車站</option>
+                            <option value="萬榮車站">萬榮車站</option>
+                            <option value="光復車站">光復車站</option>
+                            <option value="富源車站">富源車站</option>
+                            <option value="瑞穗車站">瑞穗車站</option>
+                            <option value="玉里車站">玉里車站</option>
+                            <option value="東里車站">東里車站</option>
+                            <option value="東竹車站">東竹車站</option>
+                            <option value="富里車站">富里車站</option>
+                        </select>
+                    </div>
+                    <div class="form-group" style="margin:0; flex:1; min-width:150px;">
+                        <label>到達站</label>
+                        <select id="trainSearchDest" class="form-control">
+                            <option value="和平車站">和平車站</option>
+                            <option value="和仁車站">和仁車站</option>
+                            <option value="崇德車站">崇德車站</option>
+                            <option value="新城車站">新城車站</option>
+                            <option value="北埔車站">北埔車站</option>
+                            <option value="花蓮車站">花蓮車站</option>
+                            <option value="吉安車站">吉安車站</option>
+                            <option value="志學車站">志學車站</option>
+                            <option value="壽豐車站">壽豐車站</option>
+                            <option value="豐田車站">豐田車站</option>
+                            <option value="林榮新光車站">林榮新光車站</option>
+                            <option value="南平車站">南平車站</option>
+                            <option value="鳳林車站">鳳林車站</option>
+                            <option value="萬榮車站">萬榮車站</option>
+                            <option value="光復車站">光復車站</option>
+                            <option value="富源車站">富源車站</option>
+                            <option value="瑞穗車站">瑞穗車站</option>
+                            <option value="玉里車站" selected>玉里車站</option>
+                            <option value="東里車站">東里車站</option>
+                            <option value="東竹車站">東竹車站</option>
+                            <option value="富里車站">富里車站</option>
+                        </select>
+                    </div>
+                    <div class="form-group" style="margin:0; flex:1; min-width:130px;">
+                        <label>乘車日期</label>
+                        <input type="date" id="trainSearchDate" class="form-control">
+                    </div>
+                    <div class="form-group" style="margin:0; flex:1; min-width:100px;">
+                        <label>時段</label>
+                        <select id="trainSearchTime" class="form-control">
+                            <option value="all">不限</option>
+                            <option value="06:00-12:00">早上 (06-12)</option>
+                            <option value="12:00-18:00">下午 (12-18)</option>
+                        </select>
+                    </div>
+                    <div class="form-group" style="margin:0; flex:1; min-width:100px;">
+                        <label>轉車</label>
+                        <select id="trainSearchTransfer" class="form-control">
+                            <option value="all">接受轉車</option>
+                            <option value="direct">僅直達車</option>
+                        </select>
+                    </div>
+                    <div class="form-group" style="margin:0; flex:1; min-width:100px;">
+                        <label>車廂偏好</label>
+                        <select id="trainSearchCarType" class="form-control">
+                            <option value="all">不限</option>
+                            <option value="standard">標準</option>
+                            <option value="business">商務</option>
+                            <option value="unreserved">自由座</option>
+                            <option value="accessible">無障礙</option>
+                        </select>
+                    </div>
+                    <button class="btn btn-primary" style="height: 38px;" onclick="renderTrainResults()"><i class="fa-solid fa-magnifying-glass"></i> 查詢車次</button>
+                    <button class="btn btn-outline" style="height: 38px; color:var(--primary-earth); border-color:var(--primary-earth);" onclick="openMyTrainOrders()">
+                        <i class="fa-solid fa-ticket"></i> 我的車票
+                    </button>
+                </div>
+            </div>
+
+            <div style="margin-top: 20px;" id="trainResultsContainer">
+                <!-- 車次列表將由 JS 渲染 -->
+            </div>
+        </div>
+    </div>
+
+    <!-- 訂票 Modal -->
+    <div class="modal-overlay" id="trainBookingModal">
+        <div class="modal-box" style="max-width: 600px; max-height: 90vh; overflow-y: auto;">
+            <h3 style="color:var(--primary-earth); margin-bottom:15px; border-bottom:2px solid var(--border-color); padding-bottom:10px;">
+                <i class="fa-solid fa-ticket-simple"></i> 確認訂票資訊
+            </h3>
+            
+            <div id="bookingTrainInfo" style="background:#FAF9F6; padding:15px; border-radius:8px; margin-bottom:15px; font-weight:bold;"></div>
+            
+            <div class="form-group">
+                <label>選擇車廂類型</label>
+                <select id="bookingCarType" class="form-control" onchange="updateBookingTotal()">
+                    <option value="standard">標準車廂</option>
+                    <option value="business">商務車廂 (票價 x 1.5)</option>
+                </select>
+            </div>
+            
+            <div style="border-top:1px dashed var(--border-color); padding-top:10px; margin-top:10px;">
+                <label style="font-weight:bold; color:var(--text-muted);">選擇票種與數量 (單筆最多6張)</label>
+                
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+                    <span>一般票 (全票)</span>
+                    <input type="number" id="ticketQty_general" class="form-control" style="width:80px;" value="1" min="0" max="6" onchange="updateBookingTotal()">
+                </div>
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+                    <span>學生票 (88折) <small style="color:red;">需驗證學生證</small></span>
+                    <input type="number" id="ticketQty_student" class="form-control" style="width:80px;" value="0" min="0" max="6" onchange="updateBookingTotal()">
+                </div>
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+                    <span>敬老/愛心票 (60折) <small style="color:red;">需驗證身分證</small></span>
+                    <input type="number" id="ticketQty_elder" class="form-control" style="width:80px;" value="0" min="0" max="6" onchange="updateBookingTotal()">
+                </div>
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+                    <span>兒童票 (70折)</span>
+                    <input type="number" id="ticketQty_child" class="form-control" style="width:80px;" value="0" min="0" max="6" onchange="updateBookingTotal()">
+                </div>
+            </div>
+            
+            <div style="background:#FFF3CD; color:#856404; padding:10px; border-radius:6px; margin:15px 0; font-size:12px;" id="bookingTimeDiscountNote"></div>
+
+            <div style="text-align:right; font-size:18px; font-weight:bold; color:var(--danger-color); margin-bottom:15px;">
+                總金額：<span id="bookingTotalAmount">$0</span>
+            </div>
+            
+            <div class="form-group">
+                <label>訂票人姓名</label>
+                <input type="text" id="bookingPassengerName" class="form-control" placeholder="請輸入姓名">
+            </div>
+            <div class="form-group">
+                <label>身分證字號</label>
+                <input type="text" id="bookingPassengerID" class="form-control" placeholder="請輸入身分證字號">
+            </div>
+            <div class="form-group">
+                <label>發票接收 Email <span style="color:var(--danger-color);">*</span></label>
+                <input type="email" id="bookingInvoiceEmail" class="form-control" placeholder="請輸入 Email (用於接收電子發票)">
+            </div>
+            <div class="form-group">
+                <label>取票方式</label>
+                <select id="bookingRetrievalMethod" class="form-control">
+                    <option value="電子票">電子票 (APP/線上取票)</option>
+                    <option value="超商取票">超商取票</option>
+                    <option value="車站櫃檯">車站櫃檯取票</option>
+                </select>
+            </div>
+            
+            <div style="display:flex; justify-content:flex-end; gap:10px; margin-top: 20px;">
+                <button class="btn btn-outline" onclick="document.getElementById('trainBookingModal').style.display='none'">取消</button>
+                <button class="btn btn-primary" onclick="submitTrainBooking()">確認訂票 (進入付款)</button>
+            </div>
+        </div>
+    </div>
+    
+    <!-- 我的車票 Modal -->
+    <div class="modal-overlay" id="myTrainOrdersModal">
+        <div class="modal-box" style="max-width: 800px; max-height: 90vh; overflow-y: auto;">
+            <h3 style="color:var(--primary-earth); margin-bottom:15px; border-bottom:2px solid var(--border-color); padding-bottom:10px;">
+                <i class="fa-solid fa-ticket"></i> 我的車票紀錄
+            </h3>
+            
+            <div id="trainOrderListContainer"></div>
+            
+            <div style="display:flex; justify-content:flex-end; margin-top: 20px;">
+                <button class="btn btn-outline" onclick="document.getElementById('myTrainOrdersModal').style.display='none'">關閉</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 付款專屬 Modal -->
+    <div class="modal-overlay" id="trainPaymentModal">
+        <div class="modal-box" style="max-width: 600px; max-height: 90vh; overflow-y: auto;">
+            <h3 style="color:var(--primary-earth); margin-bottom:15px; border-bottom:2px solid var(--border-color); padding-bottom:10px;">
+                <i class="fa-solid fa-credit-card"></i> 結帳與付款
+            </h3>
+            
+            <!-- 訂單明細區塊 -->
+            <div style="background:#FAF9F6; padding:15px; border-radius:8px; margin-bottom:20px; border: 1px solid #E5E5E5;">
+                <div style="display:flex; justify-content:space-between; border-bottom: 1px dashed #ccc; padding-bottom: 10px; margin-bottom: 10px;">
+                    <strong>訂單編號：<span id="paymentOrderId"></span></strong>
+                    <span style="color:var(--primary-earth); font-weight:bold;">待付款</span>
+                </div>
+                
+                <div id="paymentOrderDetails" style="font-size: 14px; line-height: 1.6; margin-bottom: 10px;">
+                    <!-- 動態填入車次與乘客資訊 -->
+                </div>
+                
+                <div style="background:#fff; padding:10px; border-radius: 4px; border: 1px solid #eee;">
+                    <div style="font-weight:bold; margin-bottom: 5px;">費用明細</div>
+                    <div id="paymentTicketBreakdown" style="font-size: 13px;">
+                        <!-- 動態填入票種明細 -->
+                    </div>
+                    
+                    <div id="pointsDiscountContainer" style="margin-top: 10px; padding-top: 10px; border-top: 1px dashed #ccc; font-size: 13px; display:none;">
+                        <label style="cursor:pointer; display:flex; justify-content:space-between; align-items:center; margin:0;">
+                            <span>
+                                <input type="checkbox" id="usePointsCheckbox" onchange="togglePointsDiscount()"> 
+                                使用平台點數折抵 <span style="color:var(--text-muted);">(目前: <span id="currentPointsDisplay">0</span> 點)</span>
+                            </span>
+                            <span id="pointsDiscountAmount" style="color:var(--danger-color); font-weight:bold;">- $0</span>
+                        </label>
+                    </div>
+
+                    <div style="text-align:right; margin-top:10px; font-size:20px; font-weight:bold; color:var(--danger-color); border-top: 1px solid #eee; padding-top: 10px;">
+                        應付總額：<span id="paymentTotalAmount"></span>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- 付款方式選擇 -->
+            <div class="form-group">
+                <label style="font-weight:bold; font-size: 15px;">請選擇付款方式</label>
+                <div style="display:flex; gap:10px; margin-top:5px; flex-wrap: wrap;">
+                    <label style="flex:1; min-width: 140px; border:1px solid #ccc; padding:10px; border-radius:6px; cursor:pointer; text-align:center;">
+                        <input type="radio" name="payMethod" value="線上付款" checked onclick="togglePaymentForms()"> 
+                        <i class="fa-solid fa-credit-card"></i> 信用卡
+                    </label>
+                    <label style="flex:1; min-width: 140px; border:1px solid #ccc; padding:10px; border-radius:6px; cursor:pointer; text-align:center;">
+                        <input type="radio" name="payMethod" value="超商付款" onclick="togglePaymentForms()"> 
+                        <i class="fa-solid fa-store"></i> 超商繳費
+                    </label>
+                    <label style="flex:1; min-width: 140px; border:1px solid #ccc; padding:10px; border-radius:6px; cursor:pointer; text-align:center;">
+                        <input type="radio" name="payMethod" value="銀行轉帳" onclick="togglePaymentForms()"> 
+                        <i class="fa-solid fa-building-columns"></i> 銀行轉帳
+                    </label>
+                </div>
+            </div>
+            
+            <!-- 信用卡表單 -->
+            <div id="formCreditCard" style="background:#f9f9f9; padding:15px; border-radius:8px; border:1px solid #ddd; margin-bottom:15px;">
+                <div class="form-group">
+                    <label>信用卡號碼</label>
+                    <input type="text" class="form-control" placeholder="0000 0000 0000 0000" maxlength="19">
+                </div>
+                <div style="display:flex; gap:10px;">
+                    <div class="form-group" style="flex:1;">
+                        <label>有效期限</label>
+                        <input type="text" class="form-control" placeholder="MM/YY" maxlength="5">
+                    </div>
+                    <div class="form-group" style="flex:1;">
+                        <label>背面末三碼 (CVV)</label>
+                        <input type="text" class="form-control" placeholder="123" maxlength="3">
+                    </div>
+                </div>
+            </div>
+
+            <!-- 超商繳費說明 -->
+            <div id="formStore" style="display:none; background:#f9f9f9; padding:15px; border-radius:8px; border:1px solid #ddd; margin-bottom:15px;">
+                <p style="margin:0; font-size:14px; color:#555;">確認後，系統將產生一組 <strong>超商繳費代碼</strong>。<br>請憑此代碼至全台 7-11、全家、萊爾富或 OK 超商操作機台列印繳費單，並至櫃檯完成繳費。</p>
+            </div>
+
+            <!-- 銀行轉帳說明 -->
+            <div id="formBank" style="display:none; background:#f9f9f9; padding:15px; border-radius:8px; border:1px solid #ddd; margin-bottom:15px;">
+                <p style="margin:0; font-size:14px; color:#555;">確認後，系統將配發一組專屬的 <strong>虛擬轉帳帳號</strong>。<br>您可透過網路銀行或實體 ATM 進行轉帳，跨行轉帳將依各銀行規定收取手續費。</p>
+            </div>
+            
+            <div id="paymentInstructions" style="font-size:12px; color:#856404; background:#FFF3CD; padding:10px; border-radius:6px; margin-bottom:15px;">
+                ⚠️ 提醒：請於發車前 20 分鐘完成付款與取票程序，逾期未付款系統將自動取消訂單並釋出座位。
+            </div>
+            
+            <div style="display:flex; justify-content:flex-end; gap:10px; margin-top: 20px;">
+                <button class="btn btn-outline" onclick="document.getElementById('trainPaymentModal').style.display='none'" id="btnPayLater">稍後付款</button>
+                <button class="btn btn-primary" onclick="simulatePaymentProcessing()" id="btnConfirmPay"><i class="fa-solid fa-lock"></i> 確認並結帳</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 班次各站時刻 Modal -->
+    <div class="modal-overlay" id="trainScheduleModal">
+        <div class="modal-box" style="max-width: 500px; max-height: 80vh; overflow-y: auto;">
+            <h3 style="color:var(--primary-earth); margin-bottom:15px; border-bottom:2px solid var(--border-color); padding-bottom:10px;" id="scheduleModalTitle">
+                <i class="fa-solid fa-clock"></i> 列車時刻表
+            </h3>
+            <div id="trainScheduleContainer"></div>
+            <div style="display:flex; justify-content:flex-end; margin-top: 20px;">
+                <button class="btn btn-outline" onclick="document.getElementById('trainScheduleModal').style.display='none'">關閉</button>
             </div>
         </div>
     </div>
@@ -971,8 +1277,106 @@
             </div>
         </div>
     </div>
+    <!-- 系統通用對話框 (Alert/Confirm/Prompt) -->
+    <div class="modal-overlay" id="platformDialogModal" style="z-index: 9999; display:none;">
+        <div class="modal-box" style="max-width: 400px; text-align: center; padding: 25px;">
+            <div id="platformDialogIcon" style="font-size: 40px; margin-bottom: 15px;"></div>
+            <h3 style="color:var(--primary-earth); margin-bottom: 10px;" id="platformDialogTitle">提示</h3>
+            <div style="font-size: 15px; margin-bottom: 20px; color: var(--text-dark);" id="platformDialogMessage"></div>
+            
+            <div id="platformDialogInputContainer" style="display:none; margin-bottom: 20px;">
+                <input type="text" id="platformDialogInput" class="form-control" style="text-align: center;">
+            </div>
+            
+            <div style="display:flex; justify-content:center; gap:15px;">
+                <button class="btn btn-outline" id="btnPlatformDialogCancel" style="display:none; min-width:100px;" onclick="document.getElementById('platformDialogModal').style.display='none'">取消</button>
+                <button class="btn btn-primary" id="btnPlatformDialogConfirm" style="min-width:100px;">確定</button>
+            </div>
+        </div>
+    </div>
 
     <script>
+        // --- 系統通用對話框功能 (統一平台風格) ---
+        window.platformAlert = function(msg, type="info") {
+            return new Promise(resolve => {
+                let icon = type === "error" ? '<i class="fa-solid fa-circle-xmark" style="color:var(--danger-color);"></i>' :
+                           type === "success" ? '<i class="fa-solid fa-circle-check" style="color:#28a745;"></i>' :
+                           type === "warning" ? '<i class="fa-solid fa-triangle-exclamation" style="color:#ffc107;"></i>' :
+                           '<i class="fa-solid fa-circle-info" style="color:var(--secondary-earth);"></i>';
+                
+                document.getElementById("platformDialogIcon").innerHTML = icon;
+                document.getElementById("platformDialogTitle").innerText = type === "error" ? "錯誤" : "提示";
+                document.getElementById("platformDialogMessage").innerHTML = msg.replace(/\n/g, "<br>");
+                
+                document.getElementById("platformDialogInputContainer").style.display = "none";
+                document.getElementById("btnPlatformDialogCancel").style.display = "none";
+                
+                let btnConfirm = document.getElementById("btnPlatformDialogConfirm");
+                btnConfirm.innerText = "確定";
+                btnConfirm.onclick = function() {
+                    document.getElementById("platformDialogModal").style.display = "none";
+                    resolve();
+                };
+                
+                document.getElementById("platformDialogModal").style.display = "flex";
+            });
+        };
+
+        window.platformConfirm = function(msg) {
+            return new Promise(resolve => {
+                document.getElementById("platformDialogIcon").innerHTML = '<i class="fa-solid fa-circle-question" style="color:var(--secondary-earth);"></i>';
+                document.getElementById("platformDialogTitle").innerText = "請確認";
+                document.getElementById("platformDialogMessage").innerHTML = msg.replace(/\n/g, "<br>");
+                
+                document.getElementById("platformDialogInputContainer").style.display = "none";
+                document.getElementById("btnPlatformDialogCancel").style.display = "inline-block";
+                
+                let btnConfirm = document.getElementById("btnPlatformDialogConfirm");
+                btnConfirm.innerText = "確定";
+                btnConfirm.onclick = function() {
+                    document.getElementById("platformDialogModal").style.display = "none";
+                    resolve(true);
+                };
+                
+                let btnCancel = document.getElementById("btnPlatformDialogCancel");
+                btnCancel.onclick = function() {
+                    document.getElementById("platformDialogModal").style.display = "none";
+                    resolve(false);
+                };
+                
+                document.getElementById("platformDialogModal").style.display = "flex";
+            });
+        };
+
+        window.platformPrompt = function(msg, defaultValue="") {
+            return new Promise(resolve => {
+                document.getElementById("platformDialogIcon").innerHTML = '<i class="fa-solid fa-pen-to-square" style="color:var(--primary-earth);"></i>';
+                document.getElementById("platformDialogTitle").innerText = "請輸入";
+                document.getElementById("platformDialogMessage").innerHTML = msg.replace(/\n/g, "<br>");
+                
+                let input = document.getElementById("platformDialogInput");
+                input.value = defaultValue;
+                document.getElementById("platformDialogInputContainer").style.display = "block";
+                document.getElementById("btnPlatformDialogCancel").style.display = "inline-block";
+                
+                let btnConfirm = document.getElementById("btnPlatformDialogConfirm");
+                btnConfirm.innerText = "送出";
+                btnConfirm.onclick = function() {
+                    let val = input.value;
+                    document.getElementById("platformDialogModal").style.display = "none";
+                    resolve(val);
+                };
+                
+                let btnCancel = document.getElementById("btnPlatformDialogCancel");
+                btnCancel.onclick = function() {
+                    document.getElementById("platformDialogModal").style.display = "none";
+                    resolve(null);
+                };
+                
+                document.getElementById("platformDialogModal").style.display = "flex";
+            });
+        };
+        
         function focusGeoMapLocation(stationName) {
             const iframe = document.getElementById('googleMapIframe');
             iframe.src = `https://maps.google.com/maps?q=${encodeURIComponent(stationName)}&t=&z=14&ie=UTF8&iwloc=&output=embed`;
