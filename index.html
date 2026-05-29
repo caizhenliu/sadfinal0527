@@ -647,7 +647,11 @@
             
             <div style="background:#FFF3CD; color:#856404; padding:10px; border-radius:6px; margin:15px 0; font-size:12px;" id="bookingTimeDiscountNote"></div>
 
-            <div style="text-align:right; font-size:18px; font-weight:bold; color:var(--danger-color); margin-bottom:15px;">
+            <div id="bookingOrderPreview" style="background:#f8f9fa; border:1px solid #eee; padding:15px; border-radius:6px; margin-bottom:15px; display:none;">
+                <!-- 訂單預覽內容動態生成 -->
+            </div>
+
+            <div style="text-align:right; font-size:18px; font-weight:bold; color:var(--danger-color); margin-bottom:15px; border-top:1px dashed #ccc; padding-top:10px;">
                 總金額：<span id="bookingTotalAmount">$0</span>
             </div>
             
@@ -1908,8 +1912,9 @@
                 let newUser = { email: email, pwd: pwd, name: name, role: role };
                 registeredUsers.push(newUser);
                 saveUsersData();
-                currentUser = newUser;
-                alert('註冊成功！系統將為您自動登入。');
+                alert('註冊成功！請重新登入。');
+                switchAuthTab('login');
+                return;
             }
 
             document.getElementById('headerUserName').innerText = currentUser.name;
