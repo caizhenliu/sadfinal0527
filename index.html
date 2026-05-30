@@ -1799,6 +1799,31 @@
             let savedOrders = localStorage.getItem('hualienOrders');
             if(savedOrders) {
                 try { myOrders = JSON.parse(savedOrders); } catch(e){}
+            } else {
+                // Initialize default historical orders for default test user
+                myOrders = [
+                    {
+                        id: "ORD2024060101",
+                        date: "2024/6/1",
+                        checkIn: "2024-06-15",
+                        checkOut: "2024-06-17",
+                        guests: 2,
+                        totalPrice: 4200,
+                        items: [
+                            {
+                                propId: 1,
+                                roomId: 101,
+                                name: "麗翔酒店連鎖-花蓮館 (標準雙人房)",
+                                price: 4200,
+                                nights: 2
+                            }
+                        ],
+                        status: "已付款 (準備入住)",
+                        isReviewed: false,
+                        email: "user@student.ncnu.edu.tw"
+                    }
+                ];
+                localStorage.setItem('hualienOrders', JSON.stringify(myOrders));
             }
 
             // Migrate guest orders, coupons and chats if logged in
@@ -3307,6 +3332,29 @@
         function renderFinancePanel() {
             if(!selectedTripContextObj.expenses) selectedTripContextObj.expenses = [];
             
+            // 自動修復並移轉舊有記帳項目中的靜態建立者姓名至最新的動態使用者姓名
+            let currentParticipants = getTripParticipants();
+            let staticCreatorName = selectedTripContextObj.creator;
+            let dynamicCreatorName = currentParticipants[0] || staticCreatorName;
+            let dbMigrated = false;
+            selectedTripContextObj.expenses.forEach(exp => {
+                if (exp.payer === staticCreatorName) {
+                    exp.payer = dynamicCreatorName;
+                    dbMigrated = true;
+                }
+                if (exp.consumers) {
+                    for (let i = 0; i < exp.consumers.length; i++) {
+                        if (exp.consumers[i] === staticCreatorName) {
+                            exp.consumers[i] = dynamicCreatorName;
+                            dbMigrated = true;
+                        }
+                    }
+                }
+            });
+            if (dbMigrated && typeof saveTripsData === 'function') {
+                saveTripsData();
+            }
+            
             const payerSelect = document.getElementById("finPayer");
             let currentPayerVal = payerSelect.value;
             payerSelect.innerHTML = "";
@@ -4529,6 +4577,38 @@
                     if(rt) rt.quantity += 1;
                 }
             });
+
+            // 自動刪除對應的行程記帳項目
+            let removedCount = 0;
+            if (typeof allTripsArray !== 'undefined' && allTripsArray) {
+                allTripsArray.forEach(trip => {
+                    if (trip.expenses) {
+                        let originalLength = trip.expenses.length;
+                        trip.expenses = trip.expenses.filter(e => e.orderId != orderId);
+                        if (trip.expenses.length < originalLength) {
+                            removedCount += (originalLength - trip.expenses.length);
+                        }
+                    }
+                });
+                if (removedCount > 0) {
+                    saveTripsData();
+                    if (typeof selectedTripContextObj !== 'undefined' && selectedTripContextObj) {
+                        let currentTrip = allTripsArray.find(t => t.id === selectedTripContextObj.id);
+                        if (currentTrip) {
+                            selectedTripContextObj = currentTrip;
+                            if (typeof renderFinancePanel === 'function') renderFinancePanel();
+                            if (typeof renderDetailedItineraryTimeline === 'function') renderDetailedItineraryTimeline();
+                        }
+                    }
+                }
+            }
+
+            if (typeof openMyOrdersModal === 'function') {
+                openMyOrdersModal();
+            }
+            if (typeof renderProperties === 'function') {
+                renderProperties();
+            }
         }
 
         function addRoomTypeToCart(propId, roomId) {
@@ -5695,9 +5775,13 @@
                     if(typeof allProperties !== 'undefined') prop = allProperties.find(p => p.id === item.propId);
                     if(prop) hotelName = prop.name;
                     
-                    let payerName = currentUser ? currentUser.name : (trip.creator || "使用者");
+                    let creatorEmail = trip.creatorEmail;
+                    let creatorUser = (typeof registeredUsers !== 'undefined') ? registeredUsers.find(ru => ru.email === creatorEmail) : null;
+                    let creatorName = creatorUser ? creatorUser.name : (trip.creator || "使用者");
+                    
+                    let payerName = currentUser ? currentUser.name : creatorName;
                     let participants = [];
-                    if (trip.creator) participants.push(trip.creator);
+                    if (creatorName) participants.push(creatorName);
                     if (trip.collaborators) {
                         trip.collaborators.forEach(email => {
                             let u = (typeof registeredUsers !== 'undefined') ? registeredUsers.find(ru => ru.email === email) : null;
@@ -5709,6 +5793,7 @@
                     
                     trip.expenses.push({
                         id: Date.now() + Math.random(),
+                        orderId: currentIntegrationData.id,
                         type: "住宿",
                         note: hotelName + " (" + item.name + ")",
                         amt: item.price,
@@ -5771,6 +5856,7 @@
                 
                 trip.timelineData[dayIndex].push({
                     id: Date.now(),
+                    orderId: currentIntegrationData.id,
                     name: `火車: ${currentIntegrationData.origin} -> ${currentIntegrationData.dest} (${currentIntegrationData.trainType} ${currentIntegrationData.trainNo})`,
                     time: currentIntegrationData.depTime,
                     duration: (newEndMin - newStartMin).toString(),
@@ -5790,9 +5876,13 @@
                 });
                 
                 if(!trip.expenses) trip.expenses = [];
-                let payerName = currentUser ? currentUser.name : (trip.creator || "使用者");
+                let creatorEmail = trip.creatorEmail;
+                let creatorUser = (typeof registeredUsers !== 'undefined') ? registeredUsers.find(ru => ru.email === creatorEmail) : null;
+                let creatorName = creatorUser ? creatorUser.name : (trip.creator || "使用者");
+                
+                let payerName = currentUser ? currentUser.name : creatorName;
                 let participants = [];
-                if (trip.creator) participants.push(trip.creator);
+                if (creatorName) participants.push(creatorName);
                 if (trip.collaborators) {
                     trip.collaborators.forEach(email => {
                         let u = (typeof registeredUsers !== 'undefined') ? registeredUsers.find(ru => ru.email === email) : null;
@@ -5804,6 +5894,7 @@
                 
                 trip.expenses.push({
                     id: Date.now() + Math.random(),
+                    orderId: currentIntegrationData.id,
                     type: "交通",
                     note: `火車票 (${currentIntegrationData.trainType})`,
                     amt: currentIntegrationData.totalAmount,
