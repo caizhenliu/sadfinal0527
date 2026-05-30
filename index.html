@@ -638,20 +638,30 @@
                 
                 <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
                     <span>一般票 (全票)</span>
-                    <input type="number" id="ticketQty_general" class="form-control" style="width:80px;" value="1" min="0" max="6" onchange="updateBookingTotal()">
+                    <input type="number" id="ticketQty_general" class="form-control" style="width:80px;" value="1" min="0" max="6" onchange="onQtyChange()">
                 </div>
                 <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
                     <span>學生票 (88折) <small style="color:red;">需驗證學生證</small></span>
-                    <input type="number" id="ticketQty_student" class="form-control" style="width:80px;" value="0" min="0" max="6" onchange="updateBookingTotal()">
+                    <input type="number" id="ticketQty_student" class="form-control" style="width:80px;" value="0" min="0" max="6" onchange="onQtyChange()">
                 </div>
                 <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
                     <span>敬老/愛心票 (60折) <small style="color:red;">需驗證身分證</small></span>
-                    <input type="number" id="ticketQty_elder" class="form-control" style="width:80px;" value="0" min="0" max="6" onchange="updateBookingTotal()">
+                    <input type="number" id="ticketQty_elder" class="form-control" style="width:80px;" value="0" min="0" max="6" onchange="onQtyChange()">
                 </div>
                 <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
                     <span>兒童票 (70折)</span>
-                    <input type="number" id="ticketQty_child" class="form-control" style="width:80px;" value="0" min="0" max="6" onchange="updateBookingTotal()">
+                    <input type="number" id="ticketQty_child" class="form-control" style="width:80px;" value="0" min="0" max="6" onchange="onQtyChange()">
                 </div>
+            </div>
+            
+            <div class="form-group" style="margin-top: 10px;">
+                <label>購票時間 (影響對號車時間折扣)</label>
+                <select id="bookingTimeOffset" class="form-control" onchange="updateBookingTotal()">
+                    <option value="48">發車前 1–3 天 (95折)</option>
+                    <option value="20" selected>發車前 12–24 小時 (88折)</option>
+                    <option value="8">發車前 6–12 小時 (85折)</option>
+                    <option value="3">發車前 6 小時以內 (無時間折扣)</option>
+                </select>
             </div>
             
             <div style="background:#FFF3CD; color:#856404; padding:10px; border-radius:6px; margin:15px 0; font-size:12px;" id="bookingTimeDiscountNote"></div>
@@ -664,13 +674,8 @@
                 總金額：<span id="bookingTotalAmount">$0</span>
             </div>
             
-            <div class="form-group">
-                <label>訂票人姓名</label>
-                <input type="text" id="bookingPassengerName" class="form-control" placeholder="請輸入姓名">
-            </div>
-            <div class="form-group">
-                <label>身分證字號</label>
-                <input type="text" id="bookingPassengerID" class="form-control" placeholder="請輸入身分證字號">
+            <div id="bookingPassengersContainer" style="margin-top: 15px; margin-bottom: 15px; max-height: 250px; overflow-y: auto; padding-right: 5px; border-top: 1px dashed var(--border-color); padding-top: 10px;">
+                <!-- 乘客資料欄位將依據票張數動態渲染於此 -->
             </div>
             <div class="form-group">
                 <label>發票接收 Email <span style="color:var(--danger-color);">*</span></label>
@@ -2260,18 +2265,27 @@
                 // 點擊卡片任何地方皆直接進入編輯詳細行程畫面
                 card.onclick = function() { enterTripDetailedEditor(trip.id); };
                 
+                let putBackBtn = "";
+                if (trip.status === "已取消") {
+                    putBackBtn = `<button class="btn btn-accent btn-sm" onclick="putTripBackToPlanning(${trip.id}, event)"><i class="fa-solid fa-arrow-rotate-left"></i> 放回規劃中</button>`;
+                }
+                
+                let creatorUser = registeredUsers.find(ru => ru.email === trip.creatorEmail);
+                let displayCreatorName = creatorUser ? creatorUser.name : trip.creator;
+                
                 card.innerHTML = `
                     <i class="fa-solid fa-star fav-star ${trip.isFav ? 'active' : ''}" onclick="toggleTripFavoriteStatus(${trip.id}, event)" title="點擊置頂最愛"></i>
                     <div>
                         <span class="status-tag ${trip.status==='規劃中'?'active-trip':(trip.status==='已取消'?'cancel-trip':'end-trip')}">${trip.status}</span>
                         <h4 style="font-size:16px; color:var(--primary-earth); font-weight:bold; margin-bottom:6px;"><i class="fa-solid fa-map-location-dot"></i> ${trip.name}</h4>
                         <div style="font-size:12px; color:var(--text-muted); line-height:1.5;">
-                            <div><i class="fa-solid fa-user-pen"></i> 建立者：<strong>${trip.creator}</strong></div>
+                            <div><i class="fa-solid fa-user-pen"></i> 建立者：<strong>${displayCreatorName}</strong></div>
                             <div><i class="fa-solid fa-calendar-days"></i> 日期：${trip.startDate} ~ ${trip.endDate} (${trip.days} 天) | 總預算：$${trip.budget}</div>
                             <div style="margin-top:6px;"><span style="background:#FAF9F6; border:1px solid var(--border-color); padding:2px 6px; border-radius:4px; font-size:11px; font-weight:bold; color:var(--primary-earth);"><i class="fa-solid fa-train"></i> ${trip.county} · ${trip.station}</span></div>
                         </div>
                     </div>
                     <div style="display:flex; justify-content:flex-end; gap:6px; margin-top:16px; border-top:1px dashed var(--border-color); padding-top:10px;">
+                        ${putBackBtn}
                         <button class="btn btn-outline btn-sm" onclick="openTripMainModal('edit', ${trip.id}, event)"><i class="fa-solid fa-pen-to-square"></i> 修改主資訊</button>
                         <button class="btn btn-danger btn-sm" onclick="triggerDeleteTripConfirmation(${trip.id}, '${trip.name}', event)"><i class="fa-solid fa-trash-can"></i> 刪除</button>
                     </div>
@@ -2279,6 +2293,16 @@
                 container.appendChild(card);
             });
             saveTripsData();
+        }
+
+        function putTripBackToPlanning(id, e) {
+            if(e) e.stopPropagation();
+            let trip = allTripsArray.find(t => t.id === id);
+            if(trip) {
+                trip.status = "規劃中";
+                saveTripsData();
+                renderDashboardTripCards();
+            }
         }
 
         function toggleTripFavoriteStatus(id, e) {
@@ -2316,7 +2340,7 @@
             if (mode === 'add') {
                 document.getElementById("mainTripModalTitle").innerText = "建立新旅遊行程表";
                 document.getElementById("hiddenTripId").value = "";
-                document.getElementById("modalCreator").value = "劉采蓁";
+                document.getElementById("modalCreator").value = (currentUser && currentUser.name) ? currentUser.name : "劉采蓁";
                 document.getElementById("modalTripName").value = "";
                 
                 let today = new Date();
@@ -2364,6 +2388,10 @@
 
             if (id) {
                 let trip = allTripsArray.find(t => t.id === parseInt(id));
+                let currentTotal = (trip.expenses || []).reduce((sum, e) => sum + e.convertedTwd, 0);
+                if (budget < currentTotal) {
+                    alert(`⚠️ 預算警告：您設定的新預算 ($${budget}) 低於目前已記錄的總花費 ($${currentTotal})！`);
+                }
                 trip.creator = creator; trip.name = name; trip.startDate = startDate; trip.endDate = endDate; trip.days = days; trip.budget = budget; trip.county = county; trip.station = station;
             } else {
                 let cEmail = currentUser ? currentUser.email : "user@student.ncnu.edu.tw";
@@ -3045,6 +3073,13 @@
                 alert("請先登入才能參與投票！");
                 return;
             }
+            
+            let allowedVoters = [selectedTripContextObj.creatorEmail, ...(selectedTripContextObj.collaborators || [])];
+            if (!allowedVoters.includes(currentUser.email)) {
+                alert("您不在此行程的使用者名單（建立者或共編旅伴）中，無法參與此行程的投票！");
+                return;
+            }
+            
             let poll = selectedTripContextObj.polls[pIdx];
             
             poll.options.forEach((opt) => {
@@ -3097,7 +3132,9 @@
                 selectedTripContextObj.collaborators = collabs;
                 
                 const listContainer = document.getElementById("lblPartnerList");
-                let html = `<strong>建立者：</strong> ${selectedTripContextObj.creatorEmail} <br>`;
+                let creatorUser = registeredUsers.find(ru => ru.email === selectedTripContextObj.creatorEmail);
+                let displayCreatorName = creatorUser ? creatorUser.name : selectedTripContextObj.creator;
+                let html = `<strong>建立者：</strong> ${displayCreatorName} (${selectedTripContextObj.creatorEmail}) <br>`;
                 
                 html += `<strong>已加入成員：</strong> `;
                 if(collabs.length === 0) {
@@ -3245,7 +3282,15 @@
         function getTripParticipants() {
             if (!selectedTripContextObj) return [];
             let participants = [];
-            if (selectedTripContextObj.creator) participants.push(selectedTripContextObj.creator);
+            
+            // 優先從註冊用戶查找建立者姓名，以防顯示寫死的舊建立者姓名
+            let creatorEmail = selectedTripContextObj.creatorEmail;
+            let creatorUser = registeredUsers.find(ru => ru.email === creatorEmail);
+            let creatorName = creatorUser ? creatorUser.name : selectedTripContextObj.creator;
+            
+            if (creatorName && !participants.includes(creatorName)) {
+                participants.push(creatorName);
+            }
             
             if (selectedTripContextObj.collaborators) {
                 selectedTripContextObj.collaborators.forEach(email => {
@@ -3313,13 +3358,20 @@
                 else if(exp.type === "購物") pieSegments[3] += exp.convertedTwd;
                 else if(exp.type === "門票") pieSegments[4] += exp.convertedTwd;
                 
+                let currentParticipants = getTripParticipants();
+                let displayPayer = currentParticipants.includes(exp.payer) ? exp.payer : selectedTripContextObj.creator;
+                let displayConsumers = (exp.consumers && exp.consumers.length > 0) 
+                    ? exp.consumers.filter(c => currentParticipants.includes(c)) 
+                    : currentParticipants;
+                if (displayConsumers.length === 0) displayConsumers = [displayPayer];
+
                 let div = document.createElement("div");
                 div.style = "background:white; border:1px solid var(--border-color); border-radius:4px; padding:6px; margin-bottom:4px; display:flex; justify-content:space-between; align-items:center;";
                 div.innerHTML = `
                     <div>
-                        <div style="font-weight:bold; color:var(--text-main); font-size:11px;">${exp.type} - ${exp.payer}代墊</div>
+                        <div style="font-weight:bold; color:var(--text-main); font-size:11px;">${exp.type} - ${displayPayer}代墊</div>
                         <div style="font-size:10px; color:#666;">${exp.note || '無備註'} (${exp.amt} ${exp.currency})</div>
-                        ${exp.consumers && exp.consumers.length > 0 ? `<div style="font-size:9px; color:var(--primary-earth); margin-top:2px;">由 ${exp.consumers.join(', ')} 平分</div>` : ''}
+                        <div style="font-size:9px; color:var(--primary-earth); margin-top:2px;">由 ${displayConsumers.join(', ')} 平分</div>
                     </div>
                     <div style="display:flex; align-items:center; gap:8px;">
                         <span style="font-weight:bold; color:var(--danger-color); font-size:12px;">$${exp.convertedTwd}</span>
@@ -3353,22 +3405,23 @@
                 participantsForSplit.forEach(p => balances[p] = 0);
                 
                 selectedTripContextObj.expenses.forEach(exp => {
+                    let payer = participantsForSplit.includes(exp.payer) ? exp.payer : selectedTripContextObj.creator;
+                    
                     let expenseConsumers = (exp.consumers && exp.consumers.length > 0) ? exp.consumers : participantsForSplit;
+                    expenseConsumers = expenseConsumers.filter(c => participantsForSplit.includes(c));
+                    if (expenseConsumers.length === 0) {
+                        expenseConsumers = [payer];
+                    }
+                    
                     let numConsumers = expenseConsumers.length;
                     if (numConsumers > 0) {
                         let avgPerConsumer = exp.convertedTwd / numConsumers;
                         expenseConsumers.forEach(c => {
-                            if (balances[c] === undefined) { balances[c] = 0; participantsForSplit.push(c); }
                             balances[c] -= avgPerConsumer;
                         });
                     }
 
-                    if (balances[exp.payer] !== undefined) {
-                        balances[exp.payer] += exp.convertedTwd;
-                    } else {
-                        balances[exp.payer] = exp.convertedTwd;
-                        participantsForSplit.push(exp.payer);
-                    }
+                    balances[payer] += exp.convertedTwd;
                 });
 
                 let debtors = [];
@@ -3448,6 +3501,11 @@
             if(consumers.length === 0) { alert("輸入防錯：請至少選擇一位參與分帳者！"); return; }
 
             let convertedTwd = Math.round(amt);
+            
+            let currentTotal = (selectedTripContextObj.expenses || []).reduce((sum, e) => sum + e.convertedTwd, 0);
+            if (currentTotal + convertedTwd > selectedTripContextObj.budget) {
+                alert(`⚠️ 預算超支警告：新增此筆費用後，總花費 ($${currentTotal + convertedTwd}) 將超出您的總預算上限 ($${selectedTripContextObj.budget})！`);
+            }
             
             if(!selectedTripContextObj.expenses) selectedTripContextObj.expenses = [];
             selectedTripContextObj.expenses.push({
