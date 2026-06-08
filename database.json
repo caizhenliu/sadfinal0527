@@ -1,0 +1,97 @@
+{
+  "users": [
+    {
+      "email": "user@student.ncnu.edu.tw",
+      "pwd": "123456",
+      "name": "預設測試帳號"
+    }
+  ],
+  "trips": [
+    {
+      "id": 1,
+      "name": "花蓮鐵道探索放鬆之旅",
+      "creator": "劉采蓁",
+      "creatorEmail": "user@student.ncnu.edu.tw",
+      "collaborators": [],
+      "startDate": "2024-06-15",
+      "endDate": "2024-06-17",
+      "days": 3,
+      "budget": 15000,
+      "county": "花蓮縣",
+      "station": "花蓮車站",
+      "status": "編輯中",
+      "isFav": true,
+      "expenses": [],
+      "itinerary": {
+        "1": [
+          {
+            "id": 1001,
+            "name": "花蓮鐵道文化園區導覽",
+            "time": "09:30",
+            "duration": "120",
+            "station": "花蓮車站",
+            "status": "must",
+            "remark": "攜帶玩水泳衣與爬山防蚊液",
+            "transit": "步行約 12 分鐘"
+          },
+          {
+            "id": 1002,
+            "name": "公正包子店午餐品嚐",
+            "time": "12:00",
+            "duration": "60",
+            "station": "花蓮車站",
+            "status": "must",
+            "remark": "王經理強烈大推，避開尖峰時段",
+            "transit": ""
+          }
+        ]
+      },
+      "polls": [
+        {
+          "question": "討論：Day 1 晚餐要吃哪一家？",
+          "options": [
+            {
+              "text": "賴桑壽司屋",
+              "voters": [
+                "user1@test.com",
+                "user2@test.com",
+                "user3@test.com",
+                "user@student.ncnu.edu.tw"
+              ]
+            },
+            {
+              "text": "公正包子店(精選)",
+              "voters": [
+                "user4@test.com",
+                "user5@test.com",
+                "user6@test.com",
+                "user7@test.com",
+                "user8@test.com",
+                "user9@test.com"
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": 2,
+      "name": "瑞穗溫泉暖冬小旅行",
+      "creator": "鄭禹岑",
+      "creatorEmail": "cheng@gmail.com",
+      "collaborators": [
+        "user@student.ncnu.edu.tw"
+      ],
+      "startDate": "2024-12-10",
+      "endDate": "2024-12-11",
+      "days": 2,
+      "budget": 12000,
+      "county": "花蓮縣",
+      "station": "瑞穗車站",
+      "status": "已結束",
+      "isFav": false,
+      "expenses": []
+    }
+  ],
+  "invitations": []
+}

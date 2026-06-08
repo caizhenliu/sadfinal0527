@@ -1,0 +1,520 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>第三方帳號授權登入</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --google-blue: #4285F4;
+            --google-red: #EA4335;
+            --google-yellow: #FBBC05;
+            --google-green: #34A853;
+            --facebook-blue: #1877F2;
+            --line-green: #06C755;
+            --line-dark-green: #05B34C;
+            --text-main: #333333;
+            --text-muted: #666666;
+            --border-color: #e0e0e0;
+            --bg-color: #f0f2f5;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 20px;
+            transition: background-color 0.3s ease;
+        }
+
+        /* 授權卡片樣式 */
+        .oauth-card {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+            width: 100%;
+            max-width: 420px;
+            padding: 40px 30px;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+            animation: cardAppear 0.5s cubic-bezier(0.16, 1, 0.3, 1) both;
+        }
+
+        @keyframes cardAppear {
+            0% { opacity: 0; transform: translateY(20px); }
+            100% { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Logo 區域 */
+        .brand-logo-container {
+            margin-bottom: 25px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 60px;
+        }
+
+        .brand-logo {
+            font-size: 40px;
+            animation: scaleIn 0.4s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+        }
+
+        @keyframes scaleIn {
+            0% { transform: scale(0); }
+            100% { transform: scale(1); }
+        }
+
+        /* 品牌字型與標題 */
+        .brand-title {
+            font-size: 20px;
+            font-weight: 600;
+            color: var(--text-main);
+            margin-bottom: 8px;
+        }
+
+        .brand-subtitle {
+            font-size: 14px;
+            color: var(--text-muted);
+            margin-bottom: 30px;
+        }
+
+        /* 表單元素 */
+        .form-group {
+            margin-bottom: 18px;
+            text-align: left;
+        }
+
+        .form-group label {
+            display: block;
+            font-size: 12px;
+            font-weight: 600;
+            color: var(--text-muted);
+            margin-bottom: 6px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .form-control {
+            width: 100%;
+            padding: 12px 16px;
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            font-size: 14px;
+            outline: none;
+            transition: all 0.2s ease;
+        }
+
+        .form-control:focus {
+            border-color: #888;
+            box-shadow: 0 0 0 3px rgba(0,0,0,0.05);
+        }
+
+        /* 按鈕樣式 */
+        .btn {
+            width: 100%;
+            padding: 13px;
+            border: none;
+            border-radius: 6px;
+            font-size: 15px;
+            font-weight: 600;
+            cursor: pointer;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 10px;
+            transition: all 0.2s ease;
+            margin-top: 10px;
+        }
+
+        /* Google 預設帳號選單 */
+        .google-account-list {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            margin-bottom: 20px;
+            text-align: left;
+        }
+
+        .google-account-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 12px 15px;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .google-account-item:hover {
+            background-color: #f8f9fa;
+            border-color: var(--google-blue);
+        }
+
+        .google-avatar {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            background-color: var(--google-blue);
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 14px;
+        }
+
+        .google-account-info {
+            flex: 1;
+        }
+
+        .google-account-name {
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--text-main);
+        }
+
+        .google-account-email {
+            font-size: 11px;
+            color: var(--text-muted);
+        }
+
+        /* 載入中動畫 */
+        .loading-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: white;
+            display: none;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 10;
+        }
+
+        .spinner {
+            width: 40px;
+            height: 40px;
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid var(--google-blue);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-bottom: 15px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        /* 依品牌套用之色彩 */
+        body.google-theme {
+            background-color: #f7f9fa;
+        }
+        body.google-theme .form-control:focus {
+            border-color: var(--google-blue);
+            box-shadow: 0 0 0 3px rgba(66, 133, 244, 0.15);
+        }
+        .btn-google {
+            background-color: white;
+            border: 1px solid var(--border-color);
+            color: var(--text-main);
+        }
+        .btn-google:hover {
+            background-color: #f8f9fa;
+            border-color: #ccc;
+        }
+
+        body.facebook-theme {
+            background-color: #f0f2f5;
+        }
+        body.facebook-theme .form-control:focus {
+            border-color: var(--facebook-blue);
+            box-shadow: 0 0 0 3px rgba(24, 119, 242, 0.15);
+        }
+        .btn-facebook {
+            background-color: var(--facebook-blue);
+            color: white;
+        }
+        .btn-facebook:hover {
+            background-color: #166fe5;
+            box-shadow: 0 4px 12px rgba(24, 119, 242, 0.2);
+        }
+
+        body.line-theme {
+            background-color: #edf2ed;
+        }
+        body.line-theme .form-control:focus {
+            border-color: var(--line-green);
+            box-shadow: 0 0 0 3px rgba(6, 199, 85, 0.15);
+        }
+        .btn-line {
+            background-color: var(--line-green);
+            color: white;
+        }
+        .btn-line:hover {
+            background-color: var(--line-dark-green);
+            box-shadow: 0 4px 12px rgba(6, 199, 85, 0.2);
+        }
+
+        /* Line QR Code 登入區域 */
+        .line-qr-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin-bottom: 25px;
+            padding: 15px;
+            border: 1px dashed var(--border-color);
+            border-radius: 8px;
+            background: #fafafa;
+        }
+
+        .line-qr-code {
+            width: 140px;
+            height: 140px;
+            background-color: #ccc;
+            margin: 10px 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 4px;
+            position: relative;
+            background: linear-gradient(45deg, #eee 25%, transparent 25%, transparent 75%, #eee 75%, #eee 100%), 
+                        linear-gradient(45deg, #eee 25%, white 25%, white 75%, #eee 75%, #eee 100%);
+            background-size: 20px 20px;
+            background-position: 0 0, 10px 10px;
+        }
+
+        .line-qr-code::before {
+            content: '';
+            position: absolute;
+            top: 10px; left: 10px; right: 10px; bottom: 10px;
+            border: 4px solid #333;
+            background: 
+                radial-gradient(circle at 10% 10%, #333 10%, transparent 12%),
+                radial-gradient(circle at 90% 10%, #333 10%, transparent 12%),
+                radial-gradient(circle at 10% 90%, #333 10%, transparent 12%),
+                repeating-linear-gradient(0deg, #333, #333 2px, transparent 2px, transparent 4px),
+                repeating-linear-gradient(90deg, #333, #333 2px, transparent 2px, transparent 4px);
+            opacity: 0.8;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="oauth-card">
+        <!-- 載入中遮罩 -->
+        <div class="loading-overlay" id="loadingOverlay">
+            <div class="spinner" id="loadingSpinner"></div>
+            <div style="font-size:15px; font-weight:600; color:var(--text-main);" id="loadingText">正在授權登入...</div>
+            <div style="font-size:12px; color:var(--text-muted); margin-top:5px;">即將導向回原本網頁</div>
+        </div>
+
+        <div class="brand-logo-container" id="brandLogoContainer">
+            <!-- 動態插入 Logo -->
+        </div>
+
+        <h2 class="brand-title" id="brandTitle">第三方登入授權</h2>
+        <p class="brand-subtitle" id="brandSubtitle">正在透過安全憑證登入系統</p>
+
+        <!-- Google 專屬帳號選擇畫面 -->
+        <div id="googleAuthSection" style="display: none;">
+            <div class="google-account-list">
+                <div class="google-account-item" onclick="selectGoogleAccount('user@student.ncnu.edu.tw', '預設測試帳號')">
+                    <div class="google-avatar" style="background-color: var(--google-blue)">預</div>
+                    <div class="google-account-info">
+                        <div class="google-account-name">預設測試帳號</div>
+                        <div class="google-account-email">user@student.ncnu.edu.tw</div>
+                    </div>
+                    <i class="fa-solid fa-chevron-right" style="color:#ccc; font-size:12px;"></i>
+                </div>
+                <div class="google-account-item" onclick="selectGoogleAccount('cheng@gmail.com', '鄭禹岑')">
+                    <div class="google-avatar" style="background-color: var(--google-red)">鄭</div>
+                    <div class="google-account-info">
+                        <div class="google-account-name">鄭禹岑</div>
+                        <div class="google-account-email">cheng@gmail.com</div>
+                    </div>
+                    <i class="fa-solid fa-chevron-right" style="color:#ccc; font-size:12px;"></i>
+                </div>
+                <div class="google-account-item" onclick="showGoogleManualInput()">
+                    <div class="google-avatar" style="background-color: #888;"><i class="fa-solid fa-user-plus"></i></div>
+                    <div class="google-account-info">
+                        <div class="google-account-name">使用其他 Google 帳戶</div>
+                        <div class="google-account-email">輸入您的自訂姓名與 Email</div>
+                    </div>
+                    <i class="fa-solid fa-chevron-right" style="color:#ccc; font-size:12px;"></i>
+                </div>
+            </div>
+            
+            <div id="googleManualForm" style="display:none; border-top: 1px solid var(--border-color); padding-top:20px; margin-top:10px;">
+                <div class="form-group">
+                    <label>Google 姓名</label>
+                    <input type="text" id="googleNameInput" class="form-control" placeholder="請輸入姓名 (例如: 王大同)" value="Google測試會員">
+                </div>
+                <div class="form-group">
+                    <label>Google Email</label>
+                    <input type="email" id="googleEmailInput" class="form-control" placeholder="請輸入 Email" value="google_tester@test.com">
+                </div>
+                <button class="btn btn-google" onclick="submitGoogleManual()" style="background-color: var(--google-blue); color:white; border:none;">
+                    <i class="fa-solid fa-right-to-bracket"></i> 登入此帳戶
+                </button>
+            </div>
+        </div>
+
+        <!-- Facebook 專屬登入畫面 -->
+        <div id="facebookAuthSection" style="display: none;">
+            <div class="form-group">
+                <label>Facebook 電子郵件或手機號碼</label>
+                <input type="text" id="fbEmail" class="form-control" placeholder="請輸入帳號" value="facebook_user@test.com">
+            </div>
+            <div class="form-group">
+                <label>Facebook 密碼</label>
+                <input type="password" class="form-control" placeholder="密碼" value="••••••••">
+            </div>
+            <button class="btn btn-facebook" onclick="submitFacebook()">
+                <i class="fa-brands fa-facebook"></i> 登入 Facebook 帳戶
+            </button>
+        </div>
+
+        <!-- Line 專屬登入畫面 -->
+        <div id="lineAuthSection" style="display: none;">
+            <div class="line-qr-container">
+                <div style="font-size:12px; font-weight:600; color:var(--line-dark-green);"><i class="fa-solid fa-qrcode"></i> 使用行動條碼登入</div>
+                <div class="line-qr-code"></div>
+                <div style="font-size:10px; color:var(--text-muted);">請使用 LINE App 掃描此條碼以快速登入</div>
+            </div>
+            
+            <div style="font-size:12px; color:var(--text-muted); margin-bottom:15px;">— 或使用電子郵件登入 —</div>
+            
+            <div class="form-group">
+                <label>LINE 帳號 (Email)</label>
+                <input type="email" id="lineEmail" class="form-control" placeholder="輸入 Email" value="line_user@test.com">
+            </div>
+            <div class="form-group">
+                <label>LINE 密碼</label>
+                <input type="password" class="form-control" placeholder="密碼" value="••••••••">
+            </div>
+            <button class="btn btn-line" onclick="submitLine()">
+                <i class="fa-brands fa-line"></i> 登入 LINE 帳戶
+            </button>
+        </div>
+
+        <button class="btn" style="background:none; border:none; color:var(--text-muted); text-decoration:underline; font-size:13px; margin-top:20px;" onclick="cancelAuth()">
+            取消並返回原網頁
+        </button>
+    </div>
+
+    <script>
+        // 解析網頁 URL 參數
+        const params = new URLSearchParams(window.location.search);
+        const provider = params.get('provider') || 'Google';
+        const redirectUri = params.get('redirect') || 'index.html';
+
+        // 頁面初始化 themes
+        window.onload = function() {
+            const body = document.body;
+            const logoContainer = document.getElementById('brandLogoContainer');
+            const title = document.getElementById('brandTitle');
+            const subtitle = document.getElementById('brandSubtitle');
+            
+            if (provider === 'Google') {
+                body.className = 'google-theme';
+                logoContainer.innerHTML = `<i class="fa-brands fa-google brand-logo" style="color:var(--google-blue);"></i>`;
+                title.innerText = '使用 Google 帳戶登入';
+                subtitle.innerText = '以繼續前往 Agent TT 平台';
+                document.getElementById('googleAuthSection').style.display = 'block';
+                document.getElementById('loadingSpinner').style.borderTopColor = 'var(--google-blue)';
+            } else if (provider === 'Facebook') {
+                body.className = 'facebook-theme';
+                logoContainer.innerHTML = `<i class="fa-brands fa-facebook brand-logo" style="color:var(--facebook-blue);"></i>`;
+                title.innerText = '登入 Facebook';
+                subtitle.innerText = '連結您的帳戶至 Agent TT 平台';
+                document.getElementById('facebookAuthSection').style.display = 'block';
+                document.getElementById('loadingSpinner').style.borderTopColor = 'var(--facebook-blue)';
+            } else if (provider === 'Line') {
+                body.className = 'line-theme';
+                logoContainer.innerHTML = `<i class="fa-brands fa-line brand-logo" style="color:var(--line-green);"></i>`;
+                title.innerText = 'LINE 帳號登入';
+                subtitle.innerText = '透過 LINE 輕鬆連結您的專屬行程表';
+                document.getElementById('lineAuthSection').style.display = 'block';
+                document.getElementById('loadingSpinner').style.borderTopColor = 'var(--line-green)';
+            }
+        };
+
+        // 授權完成轉址邏輯
+        function completeRedirect(email, name) {
+            const overlay = document.getElementById('loadingOverlay');
+            overlay.style.display = 'flex';
+            
+            setTimeout(() => {
+                // 將 OAuth 參數代入回傳網址，使用 100% 相容 file:// 的字串處理
+                let baseUri = redirectUri.split('?')[0].split('#')[0];
+                let paramsStr = `oauth_email=${encodeURIComponent(email)}&oauth_name=${encodeURIComponent(name)}&oauth_provider=${encodeURIComponent(provider)}`;
+                window.location.href = baseUri + "?" + paramsStr;
+            }, 1200); // 模擬安全的授權連線延遲
+        }
+
+        // Google 登入處理
+        function selectGoogleAccount(email, name) {
+            completeRedirect(email, name);
+        }
+
+        function showGoogleManualInput() {
+            document.getElementById('googleManualForm').style.display = 'block';
+        }
+
+        function submitGoogleManual() {
+            const email = document.getElementById('googleEmailInput').value.trim();
+            const name = document.getElementById('googleNameInput').value.trim();
+            if(!email || !name) {
+                alert('請填寫姓名與 Email！');
+                return;
+            }
+            completeRedirect(email, name);
+        }
+
+        // Facebook 登入處理
+        function submitFacebook() {
+            const email = document.getElementById('fbEmail').value.trim();
+            if(!email || !email.includes('@')) {
+                alert('請輸入有效的 Facebook 帳號！');
+                return;
+            }
+            // 預設產出 Facebook 使用者名稱
+            let prefix = email.split('@')[0];
+            let name = "Facebook_" + prefix.charAt(0).toUpperCase() + prefix.slice(1);
+            completeRedirect(email, name);
+        }
+
+        // Line 登入處理
+        function submitLine() {
+            const email = document.getElementById('lineEmail').value.trim();
+            if(!email || !email.includes('@')) {
+                alert('請輸入有效的 LINE 帳號！');
+                return;
+            }
+            let prefix = email.split('@')[0];
+            let name = "Line_" + prefix.charAt(0).toUpperCase() + prefix.slice(1);
+            completeRedirect(email, name);
+        }
+
+        // 取消返回
+        function cancelAuth() {
+            window.location.href = redirectUri;
+        }
+    </script>
+</body>
+</html>
