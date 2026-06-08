@@ -228,6 +228,30 @@
         .prop-price span { font-size: 12px; color: var(--text-muted); text-decoration: line-through; margin-right: 8px; font-weight: normal; }
         .wishlist-btn { color: #D1C9BF; cursor: pointer; font-size: 20px; transition: color 0.2s; }
         .wishlist-btn.active { color: var(--danger-color); }
+
+        /* 房源多圖輪播 */
+        .carousel-nav-btn {
+            opacity: 0.7;
+            transition: all 0.2s ease;
+        }
+        .carousel-nav-btn:hover {
+            opacity: 1 !important;
+            background: rgba(0,0,0,0.85) !important;
+            transform: translateY(-50%) scale(1.08) !important;
+        }
+        
+        .prop-card:hover .card-carousel-btn {
+            display: flex !important;
+        }
+        .card-carousel-btn {
+            opacity: 0.7;
+            transition: all 0.2s ease;
+        }
+        .card-carousel-btn:hover {
+            opacity: 1 !important;
+            background: rgba(0,0,0,0.85) !important;
+            transform: translateY(-50%) scale(1.1) !important;
+        }
         
         /* 購物車面板 */
         .cart-drawer { position: fixed; right: -400px; top: 0; width: 400px; height: 100vh; background: white; box-shadow: -5px 0 15px rgba(0,0,0,0.1); z-index: 1000; transition: right 0.3s ease; display: flex; flex-direction: column; }
@@ -261,6 +285,7 @@
             <button class="btn btn-outline" style="color: white; border-color: rgba(255,255,255,0.3);" id="btnNavAccommodation" onclick="switchScreen('screenAccommodation')"><i class="fa-solid fa-hotel"></i> 找房源</button>
             <button class="btn btn-outline" style="color: white; border-color: rgba(255,255,255,0.3);" id="btnNavTrainTicket" onclick="switchScreen('screenTrainTicket')"><i class="fa-solid fa-train"></i> 找車票</button>
             <button class="btn btn-outline" style="color: white; border-color: rgba(255,255,255,0.3);" id="btnNavMyOrders" onclick="openMyOrdersModal()"><i class="fa-solid fa-list-check"></i> 我的訂單</button>
+            <button class="btn btn-outline" style="color: white; border-color: rgba(255,255,255,0.3);" id="btnNavMyCoupons" onclick="openMyCouponsModal()"><i class="fa-solid fa-ticket"></i> 我的優惠券</button>
             <button class="btn btn-outline" style="color: white; border-color: rgba(255,255,255,0.3);" id="btnNavMyMessages" onclick="openMyMessagesModal()"><i class="fa-solid fa-envelope"></i> 我的訊息</button>
             <button class="btn btn-outline" style="color: white; border-color: rgba(255,255,255,0.3);" onclick="openAccountModal()"><i class="fa-solid fa-user"></i> <span id="headerUserName">會員</span></button>
             <button class="btn btn-danger" style="padding: 6px 12px; font-size: 13px;" onclick="executeLogout()"><i class="fa-solid fa-right-from-bracket"></i> 登出</button>
@@ -510,9 +535,27 @@
                     <div class="form-group" style="margin:0; flex:1; min-width:150px;">
                         <label>目的地 (車站)</label>
                         <select id="accSearchStation" class="form-control">
-                            <option value="花蓮車站">花蓮車站</option>
-                            <option value="玉里車站">玉里車站</option>
+                            <option value="和平車站">和平車站</option>
+                            <option value="和仁車站">和仁車站</option>
+                            <option value="崇德車站">崇德車站</option>
                             <option value="新城車站">新城車站</option>
+                            <option value="北埔車站">北埔車站</option>
+                            <option value="花蓮車站" selected>花蓮車站</option>
+                            <option value="吉安車站">吉安車站</option>
+                            <option value="志學車站">志學車站</option>
+                            <option value="壽豐車站">壽豐車站</option>
+                            <option value="豐田車站">豐田車站</option>
+                            <option value="林榮新光車站">林榮新光車站</option>
+                            <option value="南平車站">南平車站</option>
+                            <option value="鳳林車站">鳳林車站</option>
+                            <option value="萬榮車站">萬榮車站</option>
+                            <option value="光復車站">光復車站</option>
+                            <option value="富源車站">富源車站</option>
+                            <option value="瑞穗車站">瑞穗車站</option>
+                            <option value="玉里車站">玉里車站</option>
+                            <option value="東里車站">東里車站</option>
+                            <option value="東竹車站">東竹車站</option>
+                            <option value="富里車站">富里車站</option>
                         </select>
                     </div>
                     <div class="form-group" style="margin:0; flex:1; min-width:130px;">
@@ -977,7 +1020,10 @@
                 <div id="adminTab-props">
                     <div style="display:flex; justify-content:space-between; margin-bottom:20px;">
                         <h2 style="color:var(--primary-earth);">房源與庫存管理</h2>
-                        <button class="btn btn-accent" onclick="openAdminPropEditor()"><i class="fa-solid fa-plus"></i> 新增房源</button>
+                        <div style="display:flex; gap:10px;">
+                            <button class="btn btn-outline" style="border-color:var(--secondary-earth); color:var(--secondary-earth);" onclick="resetPropertiesData()"><i class="fa-solid fa-rotate-left"></i> 重設預設房源</button>
+                            <button class="btn btn-accent" onclick="openAdminPropEditor()"><i class="fa-solid fa-plus"></i> 新增房源</button>
+                        </div>
                     </div>
                     <table class="data-table">
                         <thead>
@@ -1108,6 +1154,12 @@
                         <!-- JS 生成 -->
                     </div>
                     
+                    <h4 style="color:var(--primary-earth); margin-bottom:10px;"><i class="fa-solid fa-ticket"></i> 使用優惠券</h4>
+                    <div style="background:#fffdf5; border:1px solid #ffeeba; border-radius:8px; padding:15px; margin-bottom:20px; font-size:14px;">
+                        <select id="checkoutCouponSelect" onchange="applyCheckoutCoupon()" style="width: 100%; padding: 8px; border-radius: 4px; border: 1px solid #ccc; font-size: 14px;"></select>
+                        <div id="checkoutCouponMessage" style="margin-top: 8px; font-size: 12px; color: var(--success-color); font-weight: bold; display: none;"></div>
+                    </div>
+                    
                     <button class="btn btn-primary" style="width:100%; padding:15px; font-size:18px; font-weight:bold;" onclick="proceedToPaymentSelection()"><i class="fa-solid fa-arrow-right"></i> 確認明細無誤</button>
                     <button class="btn btn-outline" style="width:100%; padding:15px; font-size:16px; margin-top:10px;" onclick="cancelCheckout()">取消並返回</button>
                 </div>
@@ -1219,7 +1271,17 @@
                 <h3 style="font-size:18px; color:var(--primary-earth); margin:0;" id="propDetailTitle">房源名稱</h3>
                 <button class="btn btn-outline btn-sm" onclick="contactHost()"><i class="fa-solid fa-message"></i> 聯絡房東</button>
             </div>
-            <img id="propDetailImg" src="" style="width:100%; height:250px; object-fit:cover; border-radius:8px; margin-bottom:15px;">
+            <!-- 多圖輪播容器 -->
+            <div class="prop-detail-carousel" style="position:relative; width:100%; height:250px; overflow:hidden; border-radius:8px; margin-bottom:15px; background:#e5e5e5;">
+                <div class="prop-detail-slides" id="propDetailSlides" style="display:flex; width:100%; height:100%; transition:transform 0.4s ease;">
+                    <!-- JS動態加入圖片 -->
+                </div>
+                <button class="carousel-nav-btn prev" onclick="prevPropDetailSlide()" style="position:absolute; top:50%; left:10px; transform:translateY(-50%); background:rgba(0,0,0,0.5); color:white; border:none; border-radius:50%; width:32px; height:32px; cursor:pointer; display:flex; align-items:center; justify-content:center; z-index:5;"><i class="fa-solid fa-chevron-left"></i></button>
+                <button class="carousel-nav-btn next" onclick="nextPropDetailSlide()" style="position:absolute; top:50%; right:10px; transform:translateY(-50%); background:rgba(0,0,0,0.5); color:white; border:none; border-radius:50%; width:32px; height:32px; cursor:pointer; display:flex; align-items:center; justify-content:center; z-index:5;"><i class="fa-solid fa-chevron-right"></i></button>
+                <div class="carousel-dots-container" id="propDetailDots" style="position:absolute; bottom:10px; left:50%; transform:translateX(-50%); display:flex; gap:6px; z-index:5;">
+                    <!-- JS動態加入分頁點 -->
+                </div>
+            </div>
             
             <div style="display:flex; gap:10px; margin-bottom:15px;">
                 <span style="font-size:12px; background:#F2F5F3; padding:4px 8px; border-radius:4px; color:var(--text-main);"><i class="fa-solid fa-location-dot"></i> <span id="propDetailLocation"></span></span>
@@ -1227,6 +1289,14 @@
             </div>
 
             <p id="propDetailDesc" style="font-size:13px; color:var(--text-muted); line-height:1.6; margin-bottom:15px;"></p>
+            
+            <!-- 地理位置地圖顯示 -->
+            <div style="margin-bottom:20px;">
+                <h4 style="margin-bottom:10px; color:var(--primary-earth); font-size:14px;">房源位置地圖</h4>
+                <div style="border-radius:8px; overflow:hidden; border:1px solid var(--border-color); height:200px; width:100%;">
+                    <iframe id="propDetailMapIframe" src="" width="100%" height="100%" style="border:0;" allowfullscreen="" loading="lazy"></iframe>
+                </div>
+            </div>
             
             <h4 style="margin-bottom:10px; color:var(--primary-earth); font-size:14px;">房源政策與規範</h4>
             <p id="propDetailPolicies" style="font-size:13px; color:var(--text-muted); line-height:1.6; margin-bottom:15px; background:#FFF3CD; padding:10px; border-radius:6px; color:#856404;"></p>
@@ -1266,9 +1336,27 @@
                 <div class="form-group" style="text-align:left; margin:0;">
                     <label>鄰近車站*</label>
                     <select id="adminPropStation" class="form-control">
-                        <option value="花蓮車站">花蓮車站</option>
-                        <option value="玉里車站">玉里車站</option>
+                        <option value="和平車站">和平車站</option>
+                        <option value="和仁車站">和仁車站</option>
+                        <option value="崇德車站">崇德車站</option>
                         <option value="新城車站">新城車站</option>
+                        <option value="北埔車站">北埔車站</option>
+                        <option value="花蓮車站" selected>花蓮車站</option>
+                        <option value="吉安車站">吉安車站</option>
+                        <option value="志學車站">志學車站</option>
+                        <option value="壽豐車站">壽豐車站</option>
+                        <option value="豐田車站">豐田車站</option>
+                        <option value="林榮新光車站">林榮新光車站</option>
+                        <option value="南平車站">南平車站</option>
+                        <option value="鳳林車站">鳳林車站</option>
+                        <option value="萬榮車站">萬榮車站</option>
+                        <option value="光復車站">光復車站</option>
+                        <option value="富源車站">富源車站</option>
+                        <option value="瑞穗車站">瑞穗車站</option>
+                        <option value="玉里車站">玉里車站</option>
+                        <option value="東里車站">東里車站</option>
+                        <option value="東竹車站">東竹車站</option>
+                        <option value="富里車站">富里車站</option>
                     </select>
                 </div>
             </div>
@@ -1279,8 +1367,19 @@
                     <input type="number" id="adminPropDist" class="form-control" placeholder="例: 300">
                 </div>
                 <div class="form-group" style="text-align:left; margin:0;">
-                    <label>封面照片網址*</label>
+                    <label>封面/第一張照片網址*</label>
                     <input type="text" id="adminPropImg" class="form-control" placeholder="https://...">
+                </div>
+            </div>
+            
+            <div style="display:grid; grid-template-columns: 1fr 1fr; gap:15px; margin-bottom:15px;">
+                <div class="form-group" style="text-align:left; margin:0;">
+                    <label>第二張照片網址 (選填)</label>
+                    <input type="text" id="adminPropImg2" class="form-control" placeholder="https://...">
+                </div>
+                <div class="form-group" style="text-align:left; margin:0;">
+                    <label>第三張照片網址 (選填)</label>
+                    <input type="text" id="adminPropImg3" class="form-control" placeholder="https://...">
                 </div>
             </div>
 
@@ -1382,9 +1481,25 @@
                 <div class="form-group">
                     <label>進階篩選縣市</label>
                     <select class="form-control" id="modalCountySelect" onchange="syncModalStationDropdown()">
-                        <option value="花蓮縣">花蓮縣</option>
                         <option value="臺北市">臺北市</option>
+                        <option value="新北市">新北市</option>
+                        <option value="桃園市">桃園市</option>
+                        <option value="臺中市">臺中市</option>
+                        <option value="臺南市">臺南市</option>
+                        <option value="高雄市">高雄市</option>
+                        <option value="新竹縣">新竹縣</option>
+                        <option value="苗栗縣">苗栗縣</option>
+                        <option value="彰化縣">彰化縣</option>
+                        <option value="南投縣">南投縣</option>
+                        <option value="雲林縣">雲林縣</option>
+                        <option value="嘉義縣">嘉義縣</option>
+                        <option value="屏東縣">屏東縣</option>
+                        <option value="宜蘭縣">宜蘭縣</option>
+                        <option value="花蓮縣" selected>花蓮縣</option>
                         <option value="臺東縣">臺東縣</option>
+                        <option value="基隆市">基隆市</option>
+                        <option value="新竹市">新竹市</option>
+                        <option value="嘉義市">嘉義市</option>
                     </select>
                 </div>
                 <div class="form-group">
@@ -1540,9 +1655,25 @@
 
         // 站點關聯進階篩選庫
         const countyStationMapping = {
-            "花蓮縣": ["和平車站", "和仁車站", "崇德車站", "新城車站", "景美車站", "北埔車站", "花蓮車站", "吉安車站", "志學車站", "平和車站", "壽豐車站", "豐田車站", "林榮新光車站", "南平車站", "鳳林車站", "萬榮車站", "光復車站", "大富車站", "富源車站", "瑞穗車站", "三民車站", "玉里車站", "東里車站", "東竹車站", "富里車站"],
             "臺北市": ["臺北車站", "松山車站", "南港車站"],
-            "臺東縣": ["臺東車站", "池上車站", "關山車站", "瑞源車站", "鹿野車站", "山里車站", "知本車站", "太麻里車站", "金崙車站", "大武車站", "康樂車站", "瀧溪車站", "海端車站", "瑞和車站"]
+            "新北市": ["板橋車站", "汐止車站", "樹林車站"],
+            "桃園市": ["桃園車站", "中壢車站"],
+            "臺中市": ["臺中車站", "豐原車站"],
+            "臺南市": ["臺南車站", "新營車站"],
+            "高雄市": ["高雄車站", "新左營車站"],
+            "新竹縣": ["竹北車站", "竹東車站"],
+            "苗栗縣": ["苗栗車站", "竹南車站"],
+            "彰化縣": ["彰化車站", "員林車站"],
+            "南投縣": ["車埕車站", "水里車站"],
+            "雲林縣": ["斗六車站", "斗南車站"],
+            "嘉義縣": ["民雄車站", "大林車站"],
+            "屏東縣": ["屏東車站", "潮州車站"],
+            "宜蘭縣": ["宜蘭車站", "羅東車站", "礁溪車站"],
+            "花蓮縣": ["和平車站", "和仁車站", "崇德車站", "新城車站", "景美車站", "北埔車站", "花蓮車站", "吉安車站", "志學車站", "平和車站", "壽豐車站", "豐田車站", "林榮新光車站", "南平車站", "鳳林車站", "萬榮車站", "光復車站", "大富車站", "富源車站", "瑞穗車站", "三民車站", "玉里車站", "東里車站", "東竹車站", "富里車站"],
+            "臺東縣": ["臺東車站", "池上車站", "關山車站", "瑞源車站", "鹿野車站", "山里車站", "知本車站", "太麻里車站", "金崙車站", "大武車站", "康樂車站", "瀧溪車站", "海端車站", "瑞和車站"],
+            "基隆市": ["基隆車站", "八堵車站"],
+            "新竹市": ["新竹車站"],
+            "嘉義市": ["嘉義車站"]
         };
 
         // 車站周邊 1KM 真實私房推薦景點資料庫
@@ -1997,6 +2128,19 @@
                     localStorage.setItem(prefix + 'hualienCoupons', JSON.stringify(userCoupons));
                     localStorage.removeItem('default_hualienCoupons');
                 }
+            }
+            
+            // 清除先前測試殘留的預設優惠券 (WELCOME_10OFF, FESTIVAL_15OFF)
+            let couponCleanPrefix = getUserPrefix();
+            let rawCoupons = localStorage.getItem(couponCleanPrefix + 'hualienCoupons');
+            if (rawCoupons) {
+                try {
+                    let userCoupons = JSON.parse(rawCoupons);
+                    let filtered = userCoupons.filter(c => c.code !== 'WELCOME_10OFF' && c.code !== 'FESTIVAL_15OFF');
+                    if (userCoupons.length !== filtered.length) {
+                        localStorage.setItem(couponCleanPrefix + 'hualienCoupons', JSON.stringify(filtered));
+                    }
+                } catch(e) {}
             }
         }
 
@@ -2512,6 +2656,8 @@
                 document.getElementById("modalEndDate").value = future.toISOString().split('T')[0];
                 
                 document.getElementById("modalBudget").value = "15000";
+                document.getElementById("modalCountySelect").value = "臺北市";
+                syncModalStationDropdown();
             } else {
                 document.getElementById("mainTripModalTitle").innerText = "編輯行程主體資訊";
                 let trip = allTripsArray.find(t => t.id === id);
@@ -4188,7 +4334,7 @@
     <div class="modal-overlay" id="myOrdersModal">
         <div class="modal-box" style="max-width:600px;">
             <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
-                <h3 style="color:var(--primary-earth); margin:0;"><i class="fa-solid fa-list-check"></i> 我的訂單</h3>
+                <h3 style="color:var(--primary-earth); margin:0;" id="myOrdersModalTitle"><i class="fa-solid fa-box-archive"></i> 我的訂單與優惠券</h3>
                 <i class="fa-solid fa-xmark" style="cursor:pointer; font-size:20px;" onclick="document.getElementById('myOrdersModal').style.display='none'"></i>
             </div>
             
@@ -4196,10 +4342,12 @@
             <div class="auth-tabs" style="margin-bottom: 15px;">
                 <div class="auth-tab active" id="orderTabHotel" onclick="switchOrderTab('hotel')">房源訂單</div>
                 <div class="auth-tab" id="orderTabTrain" onclick="switchOrderTab('train')">鐵路車票</div>
+                <div class="auth-tab" id="orderTabCoupon" onclick="switchOrderTab('coupon')">我的優惠券</div>
             </div>
 
             <div id="myOrdersList" style="display:flex; flex-direction:column; gap:10px; max-height: 400px; overflow-y:auto; padding-right:10px;"></div>
             <div id="myTrainOrdersList" style="display:none; flex-direction:column; gap:10px; max-height: 400px; overflow-y:auto; padding-right:10px;"></div>
+            <div id="myCouponsList" style="display:none; flex-direction:column; gap:10px; max-height: 400px; overflow-y:auto; padding-right:10px;"></div>
         </div>
     </div>
 
@@ -4286,10 +4434,41 @@
     </div>
     <script>
         // ================= B模組: JavaScript 邏輯 =================
-        let allProperties = [
+        // 取得房源的多圖輪播清單
+        function getPropertyImages(p) {
+            if (p.imgs && p.imgs.length > 0) {
+                let validList = p.imgs.filter(img => img && typeof img === 'string' && img.trim() !== "");
+                if (validList.length > 0) return validList;
+            }
+            const extraImages = [
+                "https://images.unsplash.com/photo-1566073771259-6a8506099945?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
+                "https://images.unsplash.com/photo-1582719478250-c89404bb8a0e?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
+                "https://images.unsplash.com/photo-1522708323590-d24dbb6b0267?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
+                "https://images.unsplash.com/photo-1505691938895-1758d7feb511?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
+                "https://images.unsplash.com/photo-1499793983690-e29da59ef1c2?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
+                "https://images.unsplash.com/photo-1596394516093-501ba68a0ba6?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80"
+            ];
+            let list = [p.img || "https://images.unsplash.com/photo-1566073771259-6a8506099945?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80"];
+            let idx1 = (p.id * 1) % extraImages.length;
+            let idx2 = (p.id * 2) % extraImages.length;
+            if (extraImages[idx1] !== list[0]) list.push(extraImages[idx1]);
+            if (extraImages[idx2] !== list[0] && extraImages[idx2] !== extraImages[idx1]) list.push(extraImages[idx2]);
+            while (list.length < 3) {
+                let fallback = extraImages[Math.floor(Math.random() * extraImages.length)];
+                if (!list.includes(fallback)) list.push(fallback);
+            }
+            return list;
+        }
+
+        let initialProperties = [
             { 
                 id: 1, name: "花蓮鐵道行館", station: "花蓮車站", distMeters: 300, rating: 4.8, 
                 img: "https://images.unsplash.com/photo-1566073771259-6a8506099945?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80", 
+                imgs: [
+                    "https://images.unsplash.com/photo-1566073771259-6a8506099945?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
+                    "https://images.unsplash.com/photo-1582719478250-c89404bb8a0e?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
+                    "https://images.unsplash.com/photo-1522708323590-d24dbb6b0267?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80"
+                ],
                 desc: "距離花蓮車站僅300公尺，交通極為便利。提供免費早餐與高鐵接駁服務。", 
                 locationDesc: "步行3分鐘即可抵達花蓮車站前站，周邊生活機能極佳。",
                 policies: "1. 禁菸\n2. 不可攜帶寵物\n3. 晚上10點後請降低音量",
@@ -4302,6 +4481,11 @@
             { 
                 id: 2, name: "太魯閣山月村", station: "新城車站", distMeters: 2500, rating: 4.9, 
                 img: "https://images.unsplash.com/photo-1582719478250-c89404bb8a0e?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80", 
+                imgs: [
+                    "https://images.unsplash.com/photo-1582719478250-c89404bb8a0e?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
+                    "https://images.unsplash.com/photo-1499793983690-e29da59ef1c2?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
+                    "https://images.unsplash.com/photo-1505691938895-1758d7feb511?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80"
+                ],
                 desc: "群山環繞的世外桃源，提供原住民特色風味餐，距離新城車站約10分鐘車程。", 
                 locationDesc: "位於太魯閣國家公園邊界，提供接駁車至新城車站。",
                 policies: "入住時間：15:00 後，退房時間：11:00 前。",
@@ -4313,6 +4497,11 @@
             { 
                 id: 3, name: "玉里客城民宿", station: "玉里車站", distMeters: 800, rating: 4.5, 
                 img: "https://images.unsplash.com/photo-1522708323590-d24dbb6b0267?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80", 
+                imgs: [
+                    "https://images.unsplash.com/photo-1522708323590-d24dbb6b0267?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
+                    "https://images.unsplash.com/photo-1596394516093-501ba68a0ba6?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
+                    "https://images.unsplash.com/photo-1566073771259-6a8506099945?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80"
+                ],
                 desc: "體驗花東縱谷的慢活步調，鄰近玉里橋頭臭豆腐與玉富自行車道。", 
                 locationDesc: "距離玉里車站800公尺，步行約10-15分鐘。",
                 policies: "歡迎攜帶寵物（需提前告知）。",
@@ -4325,6 +4514,11 @@
             { 
                 id: 4, name: "站前小旅宿", station: "花蓮車站", distMeters: 150, rating: 4.2, 
                 img: "https://images.unsplash.com/photo-1505691938895-1758d7feb511?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80", 
+                imgs: [
+                    "https://images.unsplash.com/photo-1505691938895-1758d7feb511?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
+                    "https://images.unsplash.com/photo-1582719478250-c89404bb8a0e?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
+                    "https://images.unsplash.com/photo-1522708323590-d24dbb6b0267?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80"
+                ],
                 desc: "平價乾淨的背包客棧，是窮遊小資族的最佳選擇。", 
                 locationDesc: "出花蓮車站右轉即達，極度便利。",
                 policies: "無門禁，但請保持安靜。",
@@ -4336,6 +4530,11 @@
             { 
                 id: 5, name: "花蓮漫遊Villa", station: "花蓮車站", distMeters: 1200, rating: 4.7, 
                 img: "https://images.unsplash.com/photo-1499793983690-e29da59ef1c2?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80", 
+                imgs: [
+                    "https://images.unsplash.com/photo-1499793983690-e29da59ef1c2?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
+                    "https://images.unsplash.com/photo-1566073771259-6a8506099945?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
+                    "https://images.unsplash.com/photo-1596394516093-501ba68a0ba6?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80"
+                ],
                 desc: "獨棟Villa享受，附設私人泳池與烤肉區，適合家庭包棟。", 
                 locationDesc: "花蓮市區內鬧中取靜的別墅區。",
                 policies: "包棟需付押金，不可舉辦電音派對。",
@@ -4347,6 +4546,11 @@
             { 
                 id: 6, name: "玉里火車頭民宿", station: "玉里車站", distMeters: 400, rating: 4.0, 
                 img: "https://images.unsplash.com/photo-1596394516093-501ba68a0ba6?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80", 
+                imgs: [
+                    "https://images.unsplash.com/photo-1596394516093-501ba68a0ba6?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
+                    "https://images.unsplash.com/photo-1522708323590-d24dbb6b0267?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
+                    "https://images.unsplash.com/photo-1505691938895-1758d7feb511?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80"
+                ],
                 desc: "平價乾淨的雙人房，老闆熱情好客，近市區。", 
                 locationDesc: "距離火車站400公尺，好停車。",
                 policies: "全面禁菸。",
@@ -4356,6 +4560,70 @@
                 ]
             }
         ];
+
+        let allProperties = [];
+        let savedProperties = localStorage.getItem('hualienProperties');
+        if (savedProperties) {
+            try {
+                allProperties = JSON.parse(savedProperties);
+            } catch(e) {}
+        }
+        if (!allProperties || allProperties.length === 0) {
+            allProperties = JSON.parse(JSON.stringify(initialProperties));
+        }
+
+        // 確保所有載入的房源皆有 imgs 欄位
+        allProperties.forEach(p => {
+            if (!p.imgs || p.imgs.length === 0) {
+                p.imgs = getPropertyImages(p);
+            }
+        });
+
+        // 確保所有 25 個車站都有房源
+        const allStationsList = ["和平車站", "和仁車站", "崇德車站", "新城車站", "景美車站", "北埔車站", "花蓮車站", "吉安車站", "志學車站", "平和車站", "壽豐車站", "豐田車站", "林榮新光車站", "南平車站", "鳳林車站", "萬榮車站", "光復車站", "大富車站", "富源車站", "瑞穗車站", "三民車站", "玉里車站", "東里車站", "東竹車站", "富里車站"];
+        
+        let maxPropId = allProperties.reduce((max, p) => Math.max(max, p.id), 0);
+        let addedAnyProp = false;
+        allStationsList.forEach(station => {
+            let hasProp = allProperties.some(p => p.station === station);
+            if (!hasProp) {
+                maxPropId++;
+                let newP = {
+                    id: maxPropId,
+                    name: `${station.replace("車站", "")}慢活旅宿`,
+                    station: station,
+                    distMeters: 500,
+                    rating: 4.5,
+                    img: "https://images.unsplash.com/photo-1566073771259-6a8506099945?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
+                    desc: `歡迎來到${station.replace("車站", "")}！這是一家鄰近火車站的舒適溫馨旅宿，提供親切的在地旅遊資訊與舒適的休憩環境。`,
+                    locationDesc: `距離${station}約500公尺，步行即可抵達，交通便利。`,
+                    policies: "1. 禁菸\n2. 寵物友善（需告知）\n3. 晚上10點後請降低音量",
+                    amenities: ["免費Wi-Fi", "行李寄存", "空調"],
+                    roomTypes: [
+                        { id: maxPropId * 100 + 1, name: "溫馨雙人房", price: 2000, quantity: 5 },
+                        { id: maxPropId * 100 + 2, name: "景觀四人房", price: 3200, quantity: 3 }
+                    ]
+                };
+                newP.imgs = getPropertyImages(newP);
+                allProperties.push(newP);
+                addedAnyProp = true;
+            }
+        });
+
+        function savePropertiesData() {
+            localStorage.setItem('hualienProperties', JSON.stringify(allProperties));
+        }
+
+        function resetPropertiesData() {
+            if (confirm("確定要重設所有房源資料嗎？這將會清除您所有的自訂房源並重新載入系統全新預設值與多圖輪播。")) {
+                localStorage.removeItem('hualienProperties');
+                location.reload();
+            }
+        }
+
+        if (addedAnyProp || !savedProperties) {
+            savePropertiesData();
+        }
 
         // 初始化 pricingRules
         allProperties.forEach(p => {
@@ -4487,11 +4755,15 @@
 
             let myOrdersBtn = document.getElementById("btnNavMyOrders");
             let myMessagesBtn = document.getElementById("btnNavMyMessages");
+            let myCouponsBtn = document.getElementById("btnNavMyCoupons");
             if (myOrdersBtn) {
                 myOrdersBtn.style.display = (screenId === 'screenAdmin') ? 'none' : 'inline-block';
             }
             if (myMessagesBtn) {
                 myMessagesBtn.style.display = (screenId === 'screenAdmin') ? 'none' : 'inline-block';
+            }
+            if (myCouponsBtn) {
+                myCouponsBtn.style.display = (screenId === 'screenAdmin') ? 'none' : 'inline-block';
             }
 
             if(screenId === 'screenAccommodation') renderProperties();
@@ -4572,9 +4844,24 @@
                 let minPrice = getMinPrice(p);
                 let fakeOriginalPrice = Math.round(minPrice * 1.25);
                 let distDisplay = p.distMeters >= 1000 ? (p.distMeters/1000).toFixed(1) + 'km' : p.distMeters + 'm';
+                
+                const pImages = getPropertyImages(p);
+                let slidesHtml = pImages.map(img => `<img src="${img}" style="width:100%; height:180px; object-fit:cover; flex-shrink:0;">`).join('');
+                let dotsHtml = pImages.map((_, i) => `<span style="width:5px; height:5px; border-radius:50%; background:white; opacity:${i===0?1:0.5}; display:inline-block; transition:opacity 0.2s;"></span>`).join('');
+
                 container.innerHTML += `
                     <div class="prop-card" onclick="openPropDetail(${p.id})">
-                        <img src="${p.img}" class="prop-image">
+                        <!-- 卡片多圖輪播 -->
+                        <div class="card-carousel" style="position:relative; width:100%; height:180px; overflow:hidden; background:#e5e5e5;">
+                            <div class="card-carousel-slides" id="cardSlides_${p.id}" style="display:flex; width:100%; height:100%; transition:transform 0.3s ease;">
+                                ${slidesHtml}
+                            </div>
+                            <button class="card-carousel-btn prev" onclick="event.stopPropagation(); prevCardSlide(${p.id})" style="position:absolute; top:50%; left:8px; transform:translateY(-50%); background:rgba(0,0,0,0.5); color:white; border:none; border-radius:50%; width:24px; height:24px; cursor:pointer; display:none; align-items:center; justify-content:center; z-index:5; font-size:10px;"><i class="fa-solid fa-chevron-left"></i></button>
+                            <button class="card-carousel-btn next" onclick="event.stopPropagation(); nextCardSlide(${p.id})" style="position:absolute; top:50%; right:8px; transform:translateY(-50%); background:rgba(0,0,0,0.5); color:white; border:none; border-radius:50%; width:24px; height:24px; cursor:pointer; display:none; align-items:center; justify-content:center; z-index:5; font-size:10px;"><i class="fa-solid fa-chevron-right"></i></button>
+                            <div class="card-carousel-dots" id="cardDots_${p.id}" style="position:absolute; bottom:8px; left:50%; transform:translateX(-50%); display:flex; gap:4px; z-index:5;">
+                                ${dotsHtml}
+                            </div>
+                        </div>
                         <div class="prop-content">
                             <div class="prop-title">
                                 <span>${p.name}</span>
@@ -4592,14 +4879,104 @@
             });
         }
 
+        let cardCarouselStates = {};
+
+        function showCardSlide(propId, idx) {
+            let p = allProperties.find(x => x.id === propId);
+            if (!p) return;
+            const images = getPropertyImages(p);
+            if (images.length === 0) return;
+            
+            if (idx < 0) idx = images.length - 1;
+            if (idx >= images.length) idx = 0;
+            cardCarouselStates[propId] = idx;
+            
+            const slides = document.getElementById(`cardSlides_${propId}`);
+            if (slides) {
+                slides.style.transform = `translateX(-${idx * 100}%)`;
+            }
+            
+            const dotsContainer = document.getElementById(`cardDots_${propId}`);
+            if (dotsContainer) {
+                const dots = dotsContainer.children;
+                for (let i = 0; i < dots.length; i++) {
+                    dots[i].style.opacity = (i === idx) ? "1" : "0.5";
+                }
+            }
+        }
+
+        function prevCardSlide(propId) {
+            let cur = cardCarouselStates[propId] || 0;
+            showCardSlide(propId, cur - 1);
+        }
+
+        function nextCardSlide(propId) {
+            let cur = cardCarouselStates[propId] || 0;
+            showCardSlide(propId, cur + 1);
+        }
+
+        let currentCarouselIndex = 0;
+        let currentCarouselImages = [];
+
+        function showPropDetailSlide(idx) {
+            if (currentCarouselImages.length === 0) return;
+            if (idx < 0) idx = currentCarouselImages.length - 1;
+            if (idx >= currentCarouselImages.length) idx = 0;
+            currentCarouselIndex = idx;
+            
+            const slidesContainer = document.getElementById("propDetailSlides");
+            slidesContainer.style.transform = `translateX(-${idx * 100}%)`;
+            
+            // Update dots style
+            const dots = document.getElementById("propDetailDots").children;
+            for (let i = 0; i < dots.length; i++) {
+                if (i === idx) {
+                    dots[i].style.background = "var(--primary-earth)";
+                    dots[i].style.opacity = "1";
+                } else {
+                    dots[i].style.background = "white";
+                    dots[i].style.opacity = "0.5";
+                }
+            }
+        }
+
+        function prevPropDetailSlide() {
+            showPropDetailSlide(currentCarouselIndex - 1);
+        }
+
+        function nextPropDetailSlide() {
+            showPropDetailSlide(currentCarouselIndex + 1);
+        }
+
         function openPropDetail(id) {
             let p = allProperties.find(x => x.id === id);
             if(!p) return;
             currentViewingProp = p;
             document.getElementById("propDetailTitle").innerText = p.name;
-            document.getElementById("propDetailImg").src = p.img;
+            
+            // Populate Carousel Slides
+            const images = getPropertyImages(p);
+            currentCarouselImages = images;
+            currentCarouselIndex = 0;
+            
+            const slidesContainer = document.getElementById("propDetailSlides");
+            slidesContainer.innerHTML = images.map(img => `
+                <img src="${img}" style="width:100%; height:100%; object-fit:cover; flex-shrink:0;">
+            `).join('');
+            
+            const dotsContainer = document.getElementById("propDetailDots");
+            dotsContainer.innerHTML = images.map((_, i) => `
+                <span style="width:8px; height:8px; border-radius:50%; background:white; opacity:0.5; cursor:pointer; display:inline-block; transition:all 0.2s;" onclick="showPropDetailSlide(${i})"></span>
+            `).join('');
+            
+            showPropDetailSlide(0);
+
             document.getElementById("propDetailDesc").innerText = p.desc;
             document.getElementById("propDetailLocation").innerText = p.locationDesc || "位置資訊未提供";
+            
+            // Set up geographical map source
+            document.getElementById("propDetailMapIframe").src = `https://maps.google.com/maps?q=${encodeURIComponent(p.name + " " + p.station)}&t=&z=14&ie=UTF8&iwloc=&output=embed`;
+
             document.getElementById("propDetailPolicies").innerText = p.policies || "無特殊規範";
             document.getElementById("propDetailRating").innerText = getPropRatingInfo(p.id).rating + " 顆星 (" + getPropRatingInfo(p.id).count + "則評價)";
             
@@ -4940,6 +5317,7 @@
 
         // ================= 新版結帳流程 =================
         let currentCheckoutOrderId = null;
+        let currentCheckoutCouponCode = null;
 
         function checkoutSelectedFromCart() {
             let selected = cartItems.filter(item => item.checked);
@@ -5025,12 +5403,7 @@
             switchScreen('screenCheckout');
         }
 
-        function setupCheckoutScreenStep1(order) {
-            document.getElementById("checkoutStep1").style.display = "block";
-            document.getElementById("checkoutStep2").style.display = "none";
-            document.getElementById("checkoutStep3").style.display = "none";
-            document.getElementById("checkoutTotalAmount").innerText = `$${order.totalPrice}`;
-            
+        function renderCheckoutSummary(order) {
             let summaryHtml = `<div style="margin-bottom:12px; padding-bottom:12px; border-bottom:1px dashed #ccc; color:var(--text-muted);">
                 <div style="margin-bottom:4px;"><i class="fa-regular fa-calendar-check"></i> <strong>日期：</strong> ${order.checkIn} ~ ${order.checkOut}</div>
                 <div><i class="fa-solid fa-users"></i> <strong>入住人數：</strong> ${order.guests} 人</div>
@@ -5055,6 +5428,93 @@
                 `;
             });
             document.getElementById("checkoutOrderSummary").innerHTML = summaryHtml;
+        }
+
+        function setupCheckoutScreenStep1(order) {
+            document.getElementById("checkoutStep1").style.display = "block";
+            document.getElementById("checkoutStep2").style.display = "none";
+            document.getElementById("checkoutStep3").style.display = "none";
+            
+            order.items.forEach(item => {
+                if (item.originalPrice === undefined) item.originalPrice = item.price;
+                if (item.originalDiscountTotal === undefined) item.originalDiscountTotal = item.discountTotal;
+            });
+            
+            document.getElementById("checkoutTotalAmount").innerText = `$${order.totalPrice}`;
+            renderCheckoutSummary(order);
+
+            // Reset coupon state
+            currentCheckoutCouponCode = null;
+            let msgEl = document.getElementById("checkoutCouponMessage");
+            if (msgEl) {
+                msgEl.style.display = "none";
+                msgEl.innerText = "";
+            }
+
+            // Populate coupon selector
+            let selectEl = document.getElementById("checkoutCouponSelect");
+            if (selectEl) {
+                let prefix = getUserPrefix();
+                let userCoupons = JSON.parse(localStorage.getItem(prefix + 'hualienCoupons') || '[]');
+                let optionsHtml = '<option value="">-- 不使用優惠券 --</option>';
+                userCoupons.forEach(coupon => {
+                    let discountPct = Math.round(coupon.discount * 10);
+                    optionsHtml += `<option value="${coupon.code}">${coupon.desc} (${discountPct}折)</option>`;
+                });
+                selectEl.innerHTML = optionsHtml;
+            }
+        }
+
+        function applyCheckoutCoupon() {
+            let order = myOrders.find(o => o.id === currentCheckoutOrderId);
+            if (!order) return;
+
+            let selectEl = document.getElementById("checkoutCouponSelect");
+            if (!selectEl) return;
+            let couponCode = selectEl.value;
+            let msgEl = document.getElementById("checkoutCouponMessage");
+
+            if (!couponCode) {
+                currentCheckoutCouponCode = null;
+                // Revert to original prices
+                order.items.forEach(item => {
+                    if (item.originalPrice !== undefined) item.price = item.originalPrice;
+                    if (item.originalDiscountTotal !== undefined) item.discountTotal = item.originalDiscountTotal;
+                });
+                let originalTotal = order.items.reduce((sum, item) => sum + item.price, 0);
+                order.totalPrice = originalTotal;
+                saveOrdersData();
+                document.getElementById("checkoutTotalAmount").innerText = `$${originalTotal}`;
+                renderCheckoutSummary(order);
+                if (msgEl) msgEl.style.display = "none";
+                return;
+            }
+
+            let prefix = getUserPrefix();
+            let userCoupons = JSON.parse(localStorage.getItem(prefix + 'hualienCoupons') || '[]');
+            let coupon = userCoupons.find(c => c.code === couponCode);
+
+            if (coupon) {
+                currentCheckoutCouponCode = couponCode;
+                // Apply coupon discount to each item
+                order.items.forEach(item => {
+                    if (item.originalPrice === undefined) item.originalPrice = item.price;
+                    if (item.originalDiscountTotal === undefined) item.originalDiscountTotal = item.discountTotal;
+                    item.price = Math.round(item.originalPrice * coupon.discount);
+                    item.discountTotal = item.basePriceTotal - item.price;
+                });
+                
+                let discountedTotal = order.items.reduce((sum, item) => sum + item.price, 0);
+                order.totalPrice = discountedTotal;
+                saveOrdersData();
+                
+                document.getElementById("checkoutTotalAmount").innerText = `$${discountedTotal}`;
+                renderCheckoutSummary(order);
+                if (msgEl) {
+                    msgEl.innerText = `🎉 已套用優惠券：${coupon.desc}，折扣後金額為：$${discountedTotal}`;
+                    msgEl.style.display = "block";
+                }
+            }
         }
 
         function proceedToPaymentSelection() {
@@ -5085,6 +5545,7 @@
                 document.getElementById("cartBadge").innerText = cartItems.length;
                 renderCart();
                 
+                currentCheckoutCouponCode = null; // Reset coupon code
                 switchScreen('screenAccommodation');
                 document.getElementById("cartDrawer").classList.add("open");
             }
@@ -5142,6 +5603,15 @@
                 }
             });
 
+            // Consume used coupon
+            if (currentCheckoutCouponCode) {
+                let prefix = getUserPrefix();
+                let userCoupons = JSON.parse(localStorage.getItem(prefix + 'hualienCoupons') || '[]');
+                userCoupons = userCoupons.filter(c => c.code !== currentCheckoutCouponCode);
+                localStorage.setItem(prefix + 'hualienCoupons', JSON.stringify(userCoupons));
+                currentCheckoutCouponCode = null;
+            }
+
             // Clear inputs
             document.getElementById("ccName").value = "";
             document.getElementById("ccNum").value = "";
@@ -5179,11 +5649,57 @@
                 document.getElementById('orderTabHotel').classList.add('active');
                 document.getElementById('myOrdersList').style.display = 'flex';
                 document.getElementById('myTrainOrdersList').style.display = 'none';
-            } else {
+                document.getElementById('myCouponsList').style.display = 'none';
+            } else if (tab === 'train') {
                 document.getElementById('orderTabTrain').classList.add('active');
                 document.getElementById('myOrdersList').style.display = 'none';
                 document.getElementById('myTrainOrdersList').style.display = 'flex';
+                document.getElementById('myCouponsList').style.display = 'none';
+            } else if (tab === 'coupon') {
+                document.getElementById('orderTabCoupon').classList.add('active');
+                document.getElementById('myOrdersList').style.display = 'none';
+                document.getElementById('myTrainOrdersList').style.display = 'none';
+                document.getElementById('myCouponsList').style.display = 'flex';
+                renderMyCoupons();
             }
+        }
+
+        function renderMyCoupons() {
+            let prefix = getUserPrefix();
+            let userCoupons = JSON.parse(localStorage.getItem(prefix + 'hualienCoupons') || '[]');
+            let html = "";
+            if (userCoupons.length === 0) {
+                html = "<div style='text-align:center; color:var(--text-muted); padding:30px;'>目前沒有任何優惠券</div>";
+            } else {
+                userCoupons.forEach((coupon) => {
+                    let discountPct = Math.round(coupon.discount * 10);
+                    let discountText = `${discountPct} 折`;
+                    if (coupon.discount === 1.0) {
+                        discountText = "免費";
+                    }
+                    html += `
+                        <div style="border:1px solid #ffeeba; border-radius:8px; padding:15px; background:#fffdf5; margin-bottom:10px; display:flex; justify-content:space-between; align-items:center; box-shadow: 0 2px 4px rgba(0,0,0,0.02);">
+                            <div>
+                                <div style="font-weight:bold; color:#856404; font-size:15px; margin-bottom:4px;">
+                                    <i class="fa-solid fa-ticket" style="color:var(--accent-earth); margin-right:5px;"></i> ${coupon.desc || '優惠券'}
+                                </div>
+                                <div style="font-size:12px; color:var(--text-muted);">
+                                    序號: <code style="background:#f1f1f1; padding:2px 4px; border-radius:3px; font-family:monospace;">${coupon.code}</code>
+                                </div>
+                            </div>
+                            <div style="text-align:right;">
+                                <span style="font-size:20px; font-weight:bold; color:var(--danger-color);">${discountText}</span>
+                            </div>
+                        </div>
+                    `;
+                });
+            }
+            document.getElementById("myCouponsList").innerHTML = html;
+        }
+
+        function openMyCouponsModal() {
+            openMyOrdersModal();
+            switchOrderTab('coupon');
         }
 
         function openMyOrdersModal() {
@@ -5592,13 +6108,14 @@
             let ordersHtml = "";
             allProperties.forEach((p, idx) => {
                 let minPrice = p.roomTypes.length > 0 ? p.roomTypes[0].price : 0;
+                let email = idx === 0 ? "user@student.ncnu.edu.tw" : `user${idx}@student.ncnu.edu.tw`;
                 ordersHtml += `<tr>
                     <td>#ORD-2026${idx}</td>
-                    <td>user${idx}@student.ncnu.edu.tw</td>
+                    <td>${email}</td>
                     <td style="font-weight:bold;">${p.name}</td>
                     <td>$${minPrice}</td>
                     <td><span style="background:#EAF2EC; color:var(--primary-earth); padding:2px 6px; border-radius:10px;">已付款</span></td>
-                    <td><button class="btn btn-outline btn-sm">詳細</button></td>
+                    <td><button class="btn btn-outline btn-sm" onclick="triggerOrderConflict('${email}')"><i class="fa-solid fa-triangle-exclamation" style="color:var(--danger-color);"></i> 引發衝突</button></td>
                 </tr>`;
             });
             document.getElementById("adminOrderList").innerHTML = ordersHtml;
@@ -5752,7 +6269,17 @@
             }
         }
 
-        function simulateOrderConflict() {
+        function triggerOrderConflict(email) {
+            let targetEmail = email || "user@student.ncnu.edu.tw";
+            let prefix = targetEmail + '_';
+            let userCoupons = JSON.parse(localStorage.getItem(prefix + 'hualienCoupons') || '[]');
+            userCoupons.push({ 
+                code: 'CONFLICT_80OFF_' + Date.now(), 
+                discount: 0.8, 
+                desc: '房源意外衝突補償八折優惠券' 
+            });
+            localStorage.setItem(prefix + 'hualienCoupons', JSON.stringify(userCoupons));
+            
             document.getElementById("conflictModal").style.display = "flex";
         }
         function closeConflictModal() {
@@ -5770,6 +6297,8 @@
                 document.getElementById("adminPropStation").value = p.station;
                 document.getElementById("adminPropDist").value = p.distMeters;
                 document.getElementById("adminPropImg").value = p.img;
+                document.getElementById("adminPropImg2").value = (p.imgs && p.imgs[1]) ? p.imgs[1] : "";
+                document.getElementById("adminPropImg3").value = (p.imgs && p.imgs[2]) ? p.imgs[2] : "";
                 document.getElementById("adminPropLocationDesc").value = p.locationDesc || "";
                 document.getElementById("adminPropAmenities").value = p.amenities.join(", ");
                 document.getElementById("adminPropDesc").value = p.desc;
@@ -5784,6 +6313,8 @@
                 document.getElementById("adminPropStation").value = "花蓮車站";
                 document.getElementById("adminPropDist").value = "";
                 document.getElementById("adminPropImg").value = "";
+                document.getElementById("adminPropImg2").value = "";
+                document.getElementById("adminPropImg3").value = "";
                 document.getElementById("adminPropLocationDesc").value = "";
                 document.getElementById("adminPropAmenities").value = "";
                 document.getElementById("adminPropDesc").value = "";
@@ -5821,11 +6352,17 @@
             const name = document.getElementById("adminPropName").value.trim();
             const dist = parseInt(document.getElementById("adminPropDist").value);
             const img = document.getElementById("adminPropImg").value.trim();
+            const img2 = document.getElementById("adminPropImg2").value.trim();
+            const img3 = document.getElementById("adminPropImg3").value.trim();
             
             if(!name || isNaN(dist) || !img) {
-                alert("請確認必填欄位 (名稱、距離、照片) 皆已填寫正確！");
+                alert("請確認必填欄位 (名稱、距離、封面照片) 皆已填寫正確！");
                 return;
             }
+
+            let imgs = [img];
+            if(img2) imgs.push(img2);
+            if(img3) imgs.push(img3);
 
             let roomTypes = [];
             let rtRows = document.getElementById("adminRoomTypesContainer").children;
@@ -5848,6 +6385,7 @@
                 station: document.getElementById("adminPropStation").value,
                 distMeters: dist,
                 img: img,
+                imgs: imgs,
                 locationDesc: document.getElementById("adminPropLocationDesc").value,
                 amenities: document.getElementById("adminPropAmenities").value.split(",").map(s => s.trim()).filter(s => s),
                 desc: document.getElementById("adminPropDesc").value,
