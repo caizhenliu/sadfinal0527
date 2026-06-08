@@ -435,7 +435,6 @@
                         <div style="flex:1; background:#FAF9F6; border:1px solid var(--border-color); border-radius:6px; padding:8px; display:flex; flex-direction:column; min-height:120px;">
                             <div style="flex:1; overflow-y:auto; font-size:11px; line-height:1.4;" id="chatMessageBox">
                                 <div style="color:var(--text-muted); text-align:center; font-style:italic;">-- 成功載入專題雲端歷史訊息 --</div>
-                                <div><strong>鄭禹岑：</strong>我加了文化園區，大家看一下喔！</div>
                             </div>
                             <div style="display:flex; gap:4px; margin-top:6px;">
                                 <input type="text" class="form-control" id="inputChatMsg" placeholder="輸入開會討論訊息..." style="padding:4px 8px;">
@@ -464,7 +463,7 @@
                                 <input type="text" class="form-control" id="finNote" placeholder="輸入備註 (例如：買伴手禮)" style="padding:4px;">
                             </div>
                             <div style="margin-bottom:4px;">
-                                <select class="form-control" id="finPayer" style="padding:4px;"><option value="會員">自己 代墊</option><option value="鄭禹岑">鄭禹岑 先付</option></select>
+                                <select class="form-control" id="finPayer" style="padding:4px;"></select>
                             </div>
                             <div style="margin-bottom:6px; background:white; padding:6px; border-radius:4px; border:1px solid #DFEBE3;">
                                 <div style="font-size:11px; color:var(--text-muted); margin-bottom:4px;">參與分帳者 (預設全選)</div>
@@ -3279,13 +3278,52 @@
             renderCollabPoll();
         }
 
+        function renderChatMessageBox() {
+            let msgBox = document.getElementById("chatMessageBox");
+            if (!msgBox) return;
+            let html = `<div style="color:var(--text-muted); text-align:center; font-style:italic;">-- 成功載入專題雲端歷史訊息 --</div>`;
+            
+            if (selectedTripContextObj) {
+                let participants = getTripParticipants();
+                let currentUserName = currentUser ? currentUser.name : '';
+                let otherParticipants = participants.filter(p => p !== currentUserName);
+                
+                if (otherParticipants.includes("鄭禹岑")) {
+                    html += `<div><strong>鄭禹岑：</strong>我加了文化園區，大家看一下喔！</div>`;
+                } else if (otherParticipants.length > 0) {
+                    html += `<div><strong>${otherParticipants[0]}：</strong>我加了這個行程的景點，大家看一下喔！</div>`;
+                }
+                
+                if (selectedTripContextObj.chatMessages) {
+                    selectedTripContextObj.chatMessages.forEach(msg => {
+                        let isMe = (msg.sender === currentUserName);
+                        let displayName = isMe ? `${msg.sender} (我)` : msg.sender;
+                        html += `<div><strong>${displayName}：</strong>${msg.text}</div>`;
+                    });
+                }
+            }
+            msgBox.innerHTML = html;
+            msgBox.scrollTop = msgBox.scrollHeight;
+        }
+
         function sendGroupChatMessage() {
             let input = document.getElementById("inputChatMsg");
             if(!input.value.trim()) return;
-            let msgBox = document.getElementById("chatMessageBox");
-            msgBox.innerHTML += `<div><strong>劉采蓁 (我)：</strong>${input.value}</div>`;
+            let userName = currentUser ? currentUser.name : "我";
+            
+            if (selectedTripContextObj) {
+                if (!selectedTripContextObj.chatMessages) {
+                    selectedTripContextObj.chatMessages = [];
+                }
+                selectedTripContextObj.chatMessages.push({
+                    sender: userName,
+                    text: input.value
+                });
+                saveTripsData();
+            }
+            
+            renderChatMessageBox();
             input.value = "";
-            msgBox.scrollTop = msgBox.scrollHeight;
         }
 
         function renderCollabPanel() {
@@ -3328,6 +3366,7 @@
                     listContainer.innerHTML = html;
                 }
                 renderCollabPoll();
+                renderChatMessageBox();
                 saveTripsData();
             } catch(e) {
                 console.error("renderCollabPanel Error:", e);
@@ -4031,8 +4070,16 @@
                     votes: {must: [], cand: []},
                     comments: []
                 });
-                document.getElementById("collabLockNotice").style.display = "flex";
-                setTimeout(() => { document.getElementById("collabLockNotice").style.display = "none"; }, 2500);
+                let participants = getTripParticipants();
+                let otherParticipants = participants.filter(p => p !== (currentUser ? currentUser.name : ''));
+                if (otherParticipants.length > 0) {
+                    let lockSpan = document.querySelector("#collabLockNotice span");
+                    if (lockSpan) {
+                        lockSpan.innerText = `旅伴 ${otherParticipants[0]} 正在編排此站點...`;
+                    }
+                    document.getElementById("collabLockNotice").style.display = "flex";
+                    setTimeout(() => { document.getElementById("collabLockNotice").style.display = "none"; }, 2500);
+                }
             } else if (timeSettingsContext.mode === "edit") {
                 let item = activeDayTimelineItems.find(i => i.id === timeSettingsContext.spotId);
                 if (item) {
